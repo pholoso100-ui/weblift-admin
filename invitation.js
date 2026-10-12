@@ -1,5 +1,6 @@
 const $=id=>document.getElementById(id);
-const API='https://weblift-sales-api.onrender.com';
+// First-party API paths allow WebLift to migrate hosts without invalidating old links.
+const API='';
 const token=new URLSearchParams(location.search).get('token')||'';
 const demo=location.pathname==='/invite-demo';
 let invitation=null,busy=false;
