@@ -185,6 +185,7 @@ function initQuote(){
  };
  loadPortfolio();
  renderItems();
+ loadSalesBridge();
 }
 function addService(mode){
  if(!canQuoteEdit()){quoteStatus("Your administrator role does not permit editing prices.",true);return}
@@ -252,4 +253,20 @@ function renderSummary(){
   const row=document.createElement("div");row.className="summary-line";const label=document.createElement("span"),value=document.createElement("b");label.textContent=item.name+(item.included?" (included)":"");value.textContent=item.included?"Included":money(item.amount);if(item.quantity>1)label.textContent+=" × "+item.quantity;row.append(label,value);sum.append(row)
  }
  $("amount-total").textContent=money(q.total);$("amount-deposit").textContent=money(q.deposit);$("amount-balance").textContent=money(q.balance);$("monthly-row").hidden=q.monthly<=0;$("amount-monthly").textContent=money(q.monthly);
+}
+
+async function loadSalesBridge(){
+ try{
+  const {activateSalesBridge}=await import("/sales-bridge.js");
+  await activateSalesBridge({
+   items:()=>quote.items,
+   rate:()=>quote.rate,
+   plan:()=>quote.plan,
+   project:()=>portfolio.find(p=>p.id===quote.projectId),
+   authorized:()=>isAuthenticated&&canQuoteEdit(),
+   persist:()=>persistPriceDraft(),
+   notify:(message,issue)=>quoteStatus(message,!!issue)
+  });
+  const refresh=$("refresh-ledger");if(refresh)refresh.disabled=false;
+ }catch(e){quoteStatus("Sales connection did not load. Reload and retry.",true)}
 }
