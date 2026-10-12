@@ -77,7 +77,7 @@ async function bootstrapIdentity(){
     $("gate-message").textContent="Checking your WebLift administrator access.";
     try{
       const token=await user.getIdToken();
-      const response=await fetch("/api/manage",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({action:"overview"}),cache:"no-store"});
+      const response=await fetch("/api/manage",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({action:"profile"}),cache:"no-store"});
       if(!response.ok)throw Error(response.status===403?"This account is not approved to administer WebLift.":"Administrator verification failed ("+response.status+").");
       const data=await response.json();
       if(n!==seq)return;
