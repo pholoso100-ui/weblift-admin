@@ -75,7 +75,7 @@ async function compose({siteUrl,name,origin}){
  const short=v=>String(v).length>46?String(v).slice(0,44)+'…':String(v);
  const svg=[
  '<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">',
- '<rect width="1200" height="630" fill="#fafcf7"/><rect width="1200" height="8" fill="#0f6849"/>',
+ '<rect width="1200" height="8" fill="#0f6849"/><rect y="0" width="1200" height="81" fill="#fafcf7"/>',
  '<rect x="30" y="23" width="1140" height="54" rx="14" fill="#edf4ee"/>',
  '<circle cx="54" cy="49" r="6" fill="#df9688"/><circle cx="76" cy="49" r="6" fill="#dfbd76"/><circle cx="98" cy="49" r="6" fill="#93c49d"/>',
  '<rect x="124" y="33" width="550" height="33" rx="11" fill="#fff"/>',
@@ -122,7 +122,7 @@ export function mountShareCards(app,{pool,requireDb,origin,validToken}){
    const q=await pool.query('SELECT project_id,project_url,company FROM wl_proposals WHERE token=$1 LIMIT 1',[token]);
    if(!q.rowCount)return res.sendStatus(404);
    const p=q.rows[0];
-   return renderCard(res,{origin,name:p.project_id||p.company,canonical:origin+'/share?token='+encodeURIComponent(token)+'&pv=3',image:origin+'/share-image/'+encodeURIComponent(token)+'.jpg?pv=3'});
+   return renderCard(res,{origin,name:p.project_id||p.company,canonical:origin+'/share?token='+encodeURIComponent(token)+'&pv=4',image:origin+'/share-image/'+encodeURIComponent(token)+'.jpg?pv=4'});
   }catch{return res.status(503).send('WebLift proposal preview temporarily unavailable')}
  });
  app.get('/share-image/:token.jpg',requireDb,async(req,res)=>{
@@ -136,7 +136,7 @@ export function mountShareCards(app,{pool,requireDb,origin,validToken}){
   }catch{return res.status(503).send('Image temporarily unavailable')}
  });
  app.get('/share-preview-demo',(req,res)=>renderCard(res,{
-  origin,name:demo.name,canonical:origin+'/share-preview-demo?pv=3',image:origin+'/share-image-demo.jpg?pv=3'
+  origin,name:demo.name,canonical:origin+'/share-preview-demo?pv=4',image:origin+'/share-image-demo.jpg?pv=4'
  }));
  app.get('/share-image-demo.jpg',async(req,res)=>{
   try{
