@@ -288,6 +288,7 @@ function renderSummary(){
  for(const item of q.items){
   const row=document.createElement("div");row.className="summary-line";const label=document.createElement("span"),value=document.createElement("b");label.textContent=item.name+(item.included?" (included)":"");value.textContent=item.included?"Included":money(item.amount);if(item.quantity>1)label.textContent+=" × "+item.quantity;row.append(label,value);sum.append(row)
  }
+ $("estimated-reward").textContent=money(Math.round(q.total*0.10*100)/100);$("estimated-n").textContent=(q.total*0.10/100).toLocaleString("en-ZA",{maximumFractionDigits:4})+" N";
  $("amount-total").textContent=money(q.total);$("amount-deposit").textContent=money(q.deposit);$("amount-balance").textContent=money(q.balance);$("monthly-row").hidden=q.monthly<=0;$("amount-monthly").textContent=money(q.monthly);
 }
 
