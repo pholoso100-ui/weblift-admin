@@ -75,13 +75,13 @@ export function mountInvitations(app,{pool,requireDb,authenticate,writable,origi
    const q=await pool.query(
     "INSERT INTO wl_invitations(token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,created_by,outreach_basis_confirmed) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11) RETURNING id,token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,status,views,created_at",
     [token,recipient,business,mobile,email,tone,JSON.stringify(services),note,project,req.administrator.actor,true]);
-   res.status(201).json({invitation:{...q.rows[0],share_url:origin+'/invite?token='+encodeURIComponent(token)+'&v=1'}});
+   res.status(201).json({invitation:{...q.rows[0],share_url:origin+'/your-invitation?token='+encodeURIComponent(token)+'&v=1'}});
   }catch{return unavailable(res)}
  });
  app.get('/api/sales/admin/invitations',authenticate,requireDb,async(req,res)=>{
   try{
    const q=await pool.query("SELECT id,token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,status,views,first_viewed_at,last_viewed_at,client_contact_consent,response_at,created_at FROM wl_invitations ORDER BY created_at DESC LIMIT 200");
-   res.json({invitations:q.rows.map(x=>({...x,share_url:origin+'/invite?token='+encodeURIComponent(x.token)+'&v=1'}))});
+   res.json({invitations:q.rows.map(x=>({...x,share_url:origin+'/your-invitation?token='+encodeURIComponent(x.token)+'&v=1'}))});
   }catch{return unavailable(res)}
  });
  app.post('/api/sales/admin/invitations/:id/revoke',authenticate,writable,requireDb,async(req,res)=>{
@@ -142,12 +142,12 @@ export function mountInvitations(app,{pool,requireDb,authenticate,writable,origi
   res.set('Content-Type','text/html; charset=utf-8').set('X-Robots-Tag','noindex,nofollow,noarchive');
   return res.status(200).send(html);
  }
- app.get('/invite',requireDb,async(req,res)=>{
+ app.get('/your-invitation',requireDb,async(req,res)=>{
   const token=trim(req.query.token,120);
   try{
    const record=await getCard(token);
    if(!record)return res.status(404).send('This WebLift invitation is not available.');
-   serve(res,record,origin+'/invite?token='+encodeURIComponent(token)+'&v=1',origin+'/invite-card/'+encodeURIComponent(token)+'.jpg?v=1');
+   serve(res,record,origin+'/your-invitation?token='+encodeURIComponent(token)+'&v=1',origin+'/invite-card/'+encodeURIComponent(token)+'.jpg?v=1');
   }catch{return res.status(503).send('Invitation temporarily unavailable.')}
  });
  app.get('/invite-card/:token.jpg',requireDb,async(req,res)=>{
