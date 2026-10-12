@@ -229,10 +229,17 @@ app.get('/api/sales/proposal/:token/quote.pdf',requireDb,async(req,res)=>{
   t('PROJECT',M,302,wide,{bold:true,size:9,color:muted});
   t(p.project_id||'Custom website',M,319,wide,{bold:true,size:12});
   if(p.project_url)t('Website preview: '+p.project_url,M,342,wide,{size:9,color:green});
-  doc.roundedRect(M,379,wide,28,7).fill(green);
-  t('SELECTED WEBSITE SERVICES',M+12,388,340,{bold:true,size:9,color:'#fff'});
-  t('COST',right-115,388,100,{bold:true,size:9,color:'#fff',opts:{align:'right'}});
-  let y=423;
+  // Banking details are shown on page one of every quotation, before the service list.
+  doc.roundedRect(M,373,wide,87,11).fill('#eef6ec');
+  doc.roundedRect(M,373,5,87,3).fill(green);
+  t('WEBLIFT PAYMENT DETAILS  |  AFRICAN BANK',M+14,382,wide-28,{bold:true,size:10,color:green});
+  t('Account holder: Webliftsa T/A Mr P E Tlatsi',M+14,402,wide-28,{bold:true,size:10,color:ink});
+  t('Account number: 20160546562',M+14,422,wide-28,{bold:true,size:11,color:ink});
+  t('Payment reference: use the invoice number issued upon approval. Deposit due: 75%.',M+14,442,wide-28,{size:8,color:muted});
+  doc.roundedRect(M,478,wide,28,7).fill(green);
+  t('SELECTED WEBSITE SERVICES',M+12,487,340,{bold:true,size:9,color:'#fff'});
+  t('COST',right-115,487,100,{bold:true,size:9,color:'#fff',opts:{align:'right'}});
+  let y=523;
   t('Base website package '+p.package_code,M+12,y,340,{size:10});
   t('R'+(p.base_cents/100).toLocaleString('en-ZA',{minimumFractionDigits:2}),right-130,y,115,{bold:true,opts:{align:'right'}});
   y+=31;
@@ -313,7 +320,14 @@ app.get('/api/sales/proposal/:token/invoice.pdf',requireDb,async(req,res)=>{
   small(p.client_name,M,293);
   small('PROJECT',M+340,260,180);
   pdf.font('Helvetica-Bold').fontSize(11).fillColor(ink).text(p.project_id||'Custom website',M+340,276,{width:wide-340});
-  let y=334;
+  // Put payment instructions on the first page; repeat a detailed summary with balance below.
+  pdf.roundedRect(M,316,wide,85,11).fill('#eef6ec');
+  pdf.roundedRect(M,316,5,85,3).fill(green);
+  pdf.font('Helvetica-Bold').fontSize(11).fillColor(green).text('PAYMENT DETAILS  |  AFRICAN BANK',M+14,325,{width:wide-28});
+  pdf.font('Helvetica').fontSize(10).fillColor(ink).text('Account holder: Webliftsa T/A Mr P E Tlatsi',M+14,345,{width:wide-28});
+  pdf.font('Helvetica-Bold').fontSize(11).fillColor(ink).text('Account number: 20160546562',M+14,362,{width:wide-28});
+  pdf.font('Helvetica').fontSize(9).fillColor(muted).text('Bank transfer reference: '+p.invoice_no,M+14,381,{width:wide-28});
+  let y=420;
   pdf.roundedRect(M,y,wide,29,8).fill('#0c5e45');
   pdf.font('Helvetica-Bold').fontSize(9).fillColor('#fff').text('AGREED WEBSITE SERVICES',M+13,y+10);
   pdf.text('AMOUNT',W-M-126,y+10,{width:112,align:'right'});
@@ -351,7 +365,7 @@ app.get('/api/sales/proposal/:token/invoice.pdf',requireDb,async(req,res)=>{
    small('Provisional 10% loyalty purchasing value: '+rand(p.reward_potential_cents)+'. Not deducted from this invoice; no N credits issued.',M+12,y+23,wide-24,{size:8});
    y+=52;
   }
-  if(y>685){pdf.addPage();y=55}
+  if(y>645){pdf.addPage();y=55}
   pdf.roundedRect(M,y,wide,72,9).fill(soft);
   pdf.font('Helvetica-Bold').fontSize(10).fillColor(ink).text('PAYMENT DETAILS',M+12,y+10);
   small('African Bank   |   Account 20160546562',M+12,y+27,wide-24);
