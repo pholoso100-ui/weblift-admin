@@ -3,7 +3,7 @@ import pg from 'pg';
 import PDFDocument from 'pdfkit';
 import {randomBytes} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-import {mountShareCards} from './share-card.js';
+import {mountShareCards,warmShareCover} from './share-card.js';
 const app=express();app.disable('x-powered-by');app.use(express.json({limit:'80kb'}));
 const ORIGIN='https://weblift-sa.vercel.app', PORT=Number(process.env.PORT||10000);
 const pool=process.env.DATABASE_URL?new pg.Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.PG_SSL==='false'?false:{rejectUnauthorized:false},max:5,connectionTimeoutMillis:7000}):null;
@@ -103,7 +103,7 @@ app.patch('/api/sales/admin/settings',authenticate,writable,requireDb,async(req,
 });
 app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query(`SELECT p.id,p.token,p.client_name,p.company,p.client_email,p.project_id,p.total_cents,p.deposit_cents,p.balance_cents,p.status,p.version,p.invoice_no,p.created_at,p.updated_at,p.nexora_opt_in,p.reward_status,p.reward_potential_cents,COALESCE((SELECT SUM(amount_cents) FROM wl_payments w WHERE w.proposal_id=p.id),0)::integer AS paid_cents FROM wl_proposals p ORDER BY p.created_at DESC LIMIT 150`);
-  res.json({proposals:q.rows.map(i=>({...i,outstanding_cents:Math.max(0,i.total_cents-i.paid_cents),books_status:i.invoice_no&&i.paid_cents>=i.total_cents?'paid_in_full':'open',share_url:ORIGIN+'/share?token='+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
+  res.json({proposals:q.rows.map(i=>({...i,outstanding_cents:Math.max(0,i.total_cents-i.paid_cents),books_status:i.invoice_no&&i.paid_cents>=i.total_cents?'paid_in_full':'open',share_url:ORIGIN+'/share?token='+i.token+'&pv=3'}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
 });
 app.get('/api/sales/admin/events',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT event_type,proposal_id,details,created_at FROM wl_sales_events ORDER BY created_at DESC LIMIT 80');res.json({events:q.rows})}catch{res.status(500).json({error:'Cannot read sales notifications.'})}
@@ -157,7 +157,8 @@ app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,
   const q=await c.query('INSERT INTO wl_proposals(token,client_name,company,client_email,client_phone,project_id,project_url,package_code,items,base_cents,total_cents,monthly_cents,deposit_cents,balance_cents,notes,created_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,$15,$16) RETURNING id,version,status,created_at',[token,name,company,toText(b.client_email,180),toText(b.client_phone,35),toText(b.project_id,90),toText(b.project_url,350),plan,JSON.stringify(calc.items),base,calc.total,monthly,calc.deposit,calc.balance,toText(b.notes,3000),req.administrator.actor]);
   await event(c,q.rows[0].id,'created',{total_cents:calc.total});
   await c.query('COMMIT');
-  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/share?token='+token});
+  warmShareCover(toText(b.project_url,350),ORIGIN);
+  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/share?token='+token+'&pv=3'});
  }catch(e){await c.query('ROLLBACK').catch(()=>{});res.status(400).json({error:toText(e.message||'Cannot create quotation.',150)})}finally{c.release()}
 });
 mountShareCards(app,{pool,requireDb,origin:ORIGIN,validToken});
