@@ -251,7 +251,7 @@ function lines(){
 function buildQuote(){
  const info=lines();const total=Math.round((info.base+info.chosen.reduce((s,i)=>s+i.amount,0))*100)/100,deposit=Math.round(total*.75*100)/100,balance=Math.round((total-deposit)*100)/100;
  const p=portfolio.find(x=>x.id===quote.projectId);
- return {documentType:"UNISSUED_QUOTATION_DRAFT",createdAt:new Date().toISOString(),client:{projectName:p?.name||"",projectUrl:p?.url||"",email:$("client-email").value.trim(),whatsapp:$("client-phone").value.trim(),reference:$("project-reference").value.trim()},package:quote.plan,items:info.chosen.map(x=>({name:x.name,mode:x.mode,hours:x.mode==="hourly"?x.hours:null,quantity:x.mode==="fixed"?(x.qty??1):null,rate:x.mode==="hourly"?quote.rate:null,unitPrice:x.mode==="fixed"?x.price:null,included:x.included,amount:x.amount})),base:info.base,total,deposit,balance,monthly:info.monthly,vat:0,notes:$("proposal-notes").value,terms:"75% deposit in advance and 25% immediately after website is live and operational. Supplier not VAT registered.",issued:false,accepted:false,paid:false};
+ return {documentType:"UNISSUED_QUOTATION_DRAFT",createdAt:new Date().toISOString(),client:{projectName:p?.name||"",projectUrl:p?.url||"",email:$("client-email").value.trim(),whatsapp:$("client-phone").value.trim(),reference:$("project-reference").value.trim()},package:quote.plan,items:info.chosen.map(x=>({name:x.name,mode:x.mode,hours:x.mode==="hourly"?x.hours:null,quantity:x.mode==="fixed"?(x.qty??1):null,rate:x.mode==="hourly"?quote.rate:null,unitPrice:x.mode==="fixed"?x.price:null,included:x.included,amount:x.amount})),base:info.base,total,deposit,balance,monthly:info.monthly,vat:0,payment:{bank:"African Bank",accountHolder:"Webliftsa T/A Mr P E Tlatsi",accountNumber:"20160546562",reference:"Official invoice number to be issued upon client acceptance",depositPercent:75,finalPercent:25},notes:$("proposal-notes").value,terms:"75% deposit in advance and 25% immediately after website is live and operational. Supplier not VAT registered.",issued:false,accepted:false,paid:false};
 }
 function buildDraftText(){
  const q=buildQuote();
@@ -262,6 +262,8 @@ function buildDraftText(){
  "Client contact: "+q.client.email+" / "+q.client.whatsapp,
  "Ref: "+q.client.reference,"Website package: "+q.package+" — "+money(q.base),items,
  "Total: "+money(q.total),"75% initial deposit: "+money(q.deposit),"25% on website launch: "+money(q.balance),
+ "PAYMENT DETAILS — African Bank","Account holder: Webliftsa T/A Mr P E Tlatsi","Account number: 20160546562",
+ "Payment reference: official invoice number issued upon acceptance.",
  "Monthly plan (if applicable): "+money(q.monthly),"VAT not charged. This is an unissued draft; client acceptance and official invoicing are not activated."].join("\n");
 }
 function renderItems(){
