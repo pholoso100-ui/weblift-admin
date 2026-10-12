@@ -53,7 +53,7 @@ async function authenticate(req,res,next){
  try{
   const abort=new AbortController(),timer=setTimeout(()=>abort.abort(),8000);
   let result;
-  try{result=await fetch(ORIGIN+'/api/manage',{method:'POST',headers:{Authorization:authorization,'Content-Type':'application/json'},body:JSON.stringify({action:'overview'}),signal:abort.signal})}
+  try{result=await fetch(ORIGIN+'/api/manage',{method:'POST',headers:{Authorization:authorization,'Content-Type':'application/json'},body:JSON.stringify({action:'profile'}),signal:abort.signal})}
   finally{clearTimeout(timer)}
   if(!result.ok)return res.status(403).json({error:'WebLift did not approve administrator access.'});
   const data=await result.json();
