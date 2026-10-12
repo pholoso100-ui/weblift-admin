@@ -107,6 +107,32 @@ app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
 app.get('/api/sales/admin/events',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT event_type,proposal_id,details,created_at FROM wl_sales_events ORDER BY created_at DESC LIMIT 80');res.json({events:q.rows})}catch{res.status(500).json({error:'Cannot read sales notifications.'})}
 });
+
+app.post('/api/sales/admin/proposals/:id/payments',authenticate,writable,requireDb,async(req,res)=>{
+ const {amount_cents,reference}=req.body||{};
+ const centsReceived=Number(amount_cents),ref=toText(reference,110);
+ if(!/^[0-9a-f-]{36}$/i.test(req.params.id)||!Number.isInteger(centsReceived)||centsReceived<=0||centsReceived>500000000||!ref)
+   return res.status(400).json({error:'A positive payment amount and transaction reference are required.'});
+ const c=await pool.connect();
+ try{
+  await c.query('BEGIN');
+  const rows=await c.query('SELECT id,total_cents,invoice_no,status FROM wl_proposals WHERE id=$1 FOR UPDATE',[req.params.id]);
+  if(!rows.rowCount||rows.rows[0].status!=='accepted'||!rows.rows[0].invoice_no){
+   await c.query('ROLLBACK');return res.status(409).json({error:'Only an accepted proposal with a valid invoice can receive payments.'});
+  }
+  const paid=Number((await c.query('SELECT COALESCE(SUM(amount_cents),0)::integer AS paid FROM wl_payments WHERE proposal_id=$1',[req.params.id])).rows[0].paid);
+  const outstanding=rows.rows[0].total_cents-paid;
+  if(centsReceived>outstanding){await c.query('ROLLBACK');return res.status(409).json({error:'The payment cannot exceed the current outstanding balance.'})}
+  await c.query('INSERT INTO wl_payments(proposal_id,amount_cents,reference,recorded_by) VALUES($1,$2,$3,$4)',[req.params.id,centsReceived,ref,req.administrator.actor]);
+  const remaining=outstanding-centsReceived;
+  await event(c,req.params.id,'payment_recorded',{amount_cents:centsReceived,remaining_cents:remaining,ledger_status:remaining===0?'paid_in_full':'open'});
+  await c.query('COMMIT');
+  res.json({paid_cents:paid+centsReceived,outstanding_cents:remaining,books_status:remaining===0?'paid_in_full':'open'});
+ }catch(e){
+  await c.query('ROLLBACK').catch(()=>{});
+  res.status(e?.code==='23505'?409:500).json({error:e?.code==='23505'?'A payment with this reference is already recorded.':'Could not save payment. Please retry.'});
+ }finally{c.release()}
+});
 app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,res)=>{
  const b=req.body||{},name=toText(b.client_name||b.company,140),company=toText(b.company||name,140),plan=toText(b.package_code,12);
  if(!name||!company||!['A','B','custom'].includes(plan)||!Array.isArray(b.selections))return res.status(400).json({error:'Client name, package and service selections required.'});
