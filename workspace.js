@@ -6,8 +6,8 @@ const money = n => "R" + Number(n||0).toLocaleString("en-ZA",{minimumFractionDig
 const cleanNum = n => Math.max(0,Math.min(1e8,Number(n)||0));
 const gate=$("secure-gate"),workspace=$("workspace"),preview=$("preview-only"),frame=$("module-frame"),pane=$("page-iframe"),select=$("section-choice");
 const originalAdmin="/admin/original",salesPage="/admin/sales",dropshipPage="/dropshipping-admin.html";
-const choices={overview:"Overview & visitors",mail:"Email inbox",guests:"Clients & guest accounts",team:"Administrator team",brand:"Email branding",activity:"Activity history",quotation:"Premium quotation studio",sales:"Existing sales pricing",dropshipping:"Dropshipping management"};
-let isAuthenticated=false, currentAdmin=null, activeSection="overview",quoteLoaded=false, originalLoaded=false;
+const choices={overview:"Overview & visitors",mail:"Email inbox",guests:"Clients & guest accounts",team:"Administrator team",brand:"Email branding",activity:"Activity history",quotation:"Premium quotation studio",invitations:"Client invitations & marketing",sales:"Existing sales pricing",dropshipping:"Dropshipping management"};
+let isAuthenticated=false, currentAdmin=null, activeSection="overview",quoteLoaded=false, invitationModule=null, originalLoaded=false;
 const quoteStatus=(msg,problem=false)=>{const x=$("quote-status");x.textContent=msg;x.style.color=problem?"#ffd6ae":"#b9edcd"};
 if(!isPrimary){
  preview.hidden=false;
@@ -112,8 +112,29 @@ async function navigate(value){
  if(!isAuthenticated)return;
  if(!(value in choices))value="overview";
  activeSection=value;select.value=value;$("section-label").textContent=choices[value];
- const quote=value==="quotation";
- $("page-iframe").hidden=quote;$("quote-studio").hidden=!quote;
+ const quote=value==="quotation",invite=value==="invitations";
+ $("page-iframe").hidden=quote||invite;$("quote-studio").hidden=!quote;$("invitation-studio").hidden=!invite;
+ if(invitationModule&&!invite)invitationModule.pauseInvitations();
+ if(invite){
+  if(!["owner","administrator"].includes(currentAdmin?.role)){
+   showMsg("Only authorised WebLift owners and administrators can create personalised invitations.");
+   return;
+  }
+  showMsg("");
+  if(!invitationModule){
+   import("/invitation-admin.js").then(mod=>{
+    invitationModule=mod;
+    if(isAuthenticated&&activeSection==="invitations")mod.activateInvitationAdmin({
+     canWrite:()=>isAuthenticated&&["owner","administrator"].includes(currentAdmin?.role),
+     notify:(msg,err=false)=>showMsg((err?"Attention: ":"")+msg)
+    });
+   }).catch(()=>showMsg("The invitation studio could not load. Refresh the page to retry."));
+  }else invitationModule.activateInvitationAdmin({
+   canWrite:()=>isAuthenticated&&["owner","administrator"].includes(currentAdmin?.role),
+   notify:(msg,err=false)=>showMsg((err?"Attention: ":"")+msg)
+  });
+  return;
+ }
  if(quote){if(!quoteLoaded){quoteLoaded=true;initQuote()}return}
  const special=value==="sales"||value==="dropshipping";
  const url=value==="sales"?salesPage:value==="dropshipping"?dropshipPage:originalAdmin;
