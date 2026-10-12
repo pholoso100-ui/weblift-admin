@@ -25,6 +25,36 @@ export async function activateSalesBridge(read){
  const sharing=$('client-share');
  $('copy-share').onclick=()=>navigator.clipboard.writeText($('share-link').value).then(()=>read.notify('Link copied.'));
  $('refresh-ledger').onclick=refresh;
+ const backupButton=document.createElement('button');
+ backupButton.type='button';backupButton.className='subtle-action';
+ backupButton.textContent='Download private sales backup';
+ backupButton.title='Owner/administrator only. Includes private client and financial records.';
+ backupButton.onclick=async()=>{
+  if(!read.authorized())return read.notify('Administrator verification is required.',true);
+  if(!confirm('Download a private backup of customer contact details, proposals and payments? Only save this file on a trusted device. Do not send it over WhatsApp or upload it publicly.'))return;
+  backupButton.disabled=true;backupButton.textContent='Preparing secure download…';
+  try{
+   const authModule=await import('/premium-v3/customer-auth.js');await authModule.ready;
+   const user=authModule.auth.currentUser;
+   if(!user)throw Error('WebLift admin login has expired.');
+   const bearer=await user.getIdToken();
+   const response=await fetch(API+'/api/sales/admin/migration-snapshot',{cache:'no-store',headers:{Authorization:'Bearer '+bearer}});
+   if(!response.ok){
+    const error=await response.json().catch(()=>({}));
+    throw Error(error.error||'Could not export customer records.');
+   }
+   const file=await response.blob();
+   const blobUrl=URL.createObjectURL(file);
+   try{
+    const link=document.createElement('a');link.href=blobUrl;
+    link.download='weblift-sales-private-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.append(link);link.click();link.remove();
+   }finally{setTimeout(()=>URL.revokeObjectURL(blobUrl),60000)}
+   read.notify('Private sales backup downloaded. Store it securely and keep it out of public file-sharing services.');
+  }catch(error){read.notify(error.message||'Unable to download the private backup.',true)}
+  finally{backupButton.disabled=false;backupButton.textContent='Download private sales backup'}
+ };
+ $('refresh-ledger').insertAdjacentElement('afterend',backupButton);
  publish.onclick=async()=>{
   if(!online)return read.notify('A working database connection is required before sending customer proposals.',true);
   const project=read.project(),name=$('client-name').value.trim(),email=$('client-email').value.trim();
