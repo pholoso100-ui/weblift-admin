@@ -82,3 +82,5 @@ CREATE TABLE IF NOT EXISTS wl_invitations (
  revoked_at timestamptz
 );
 CREATE INDEX IF NOT EXISTS wl_invitations_recent_idx ON wl_invitations(created_at DESC);
+
+ALTER TABLE wl_invitations ADD COLUMN IF NOT EXISTS outreach_basis_confirmed boolean NOT NULL DEFAULT false;
