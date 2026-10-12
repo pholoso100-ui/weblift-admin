@@ -21,8 +21,8 @@ function enterGate(message="Use your approved WebLift account to sign in."){
  isAuthenticated=false;
  gate.hidden=false;workspace.hidden=true;preview.hidden=true;
  $("gate-message").textContent=message;
- gate.append(frame);
- frame.src=originalAdmin;
+ if(frame.parentElement!==gate)gate.append(frame);
+ if(frame.getAttribute("src")!==originalAdmin)frame.src=originalAdmin;
  frame.style.cssText="display:block;width:100%;height:68vh;min-height:530px;margin:22px 0 0;border:1px solid #d9e7dc;border-radius:14px;background:#eff6eb";
 }
 function enterWorkspace(admin,user){
@@ -91,7 +91,7 @@ function selectOriginalTab(value){
  try{
   const doc=frame.contentDocument;
   const tab=doc?.querySelector('[data-tab="'+value+'"]');
-  if(tab && !tab.hidden){tab.click();renderedTab=value;}
+  if(tab && !tab.hidden && renderedTab!==value){tab.click();renderedTab=value;}
   hideDuplicateNavigation();
  }catch{}
 }
