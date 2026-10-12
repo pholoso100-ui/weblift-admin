@@ -81,6 +81,21 @@ app.patch('/api/sales/admin/catalogue/:id',authenticate,writable,requireDb,async
  if(!Number.isInteger(price)||price<0||price>500000000||!Number.isFinite(hours)||hours<0||hours>2000)return res.status(400).json({error:'Invalid pricing values.'});
  try{const r=await pool.query('UPDATE wl_catalogue SET label=$2,price_cents=$3,default_hours=$4,mode=$5,updated_at=now() WHERE id=$1 RETURNING *',[toText(req.params.id,80),toText(b.label,130),price,hours,b.mode==='hourly'?'hourly':'fixed']);if(!r.rowCount)return res.sendStatus(404);res.json({item:r.rows[0]})}catch{res.status(500).json({error:'Cannot save pricing.'})}
 });
+app.post('/api/sales/admin/catalogue',authenticate,writable,requireDb,async(req,res)=>{
+ const b=req.body||{},label=toText(b.label,130),price=Number(b.price_cents||0),hours=Number(b.default_hours||0);
+ if(!label||!Number.isInteger(price)||price<0||price>500000000||!Number.isFinite(hours)||hours<0||hours>2000)return res.status(400).json({error:'Invalid service pricing.'});
+ const id='custom-'+randomBytes(8).toString('hex');
+ try{const q=await pool.query('INSERT INTO wl_catalogue(id,label,price_cents,mode,default_hours,category) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',[id,label,price,b.mode==='hourly'?'hourly':'fixed',hours,'Custom services']);res.status(201).json({item:q.rows[0]})}catch{res.status(500).json({error:'Cannot create custom service.'})}
+});
+app.patch('/api/sales/admin/settings',authenticate,writable,requireDb,async(req,res)=>{
+ const current=await pool.query("SELECT value FROM wl_config WHERE id='pricing'");
+ const old=current.rows[0]?.value||{};
+ const next={...old};
+ for(const key of ['rate_cents','plan_A_cents','plan_B_cents','monthly_A_cents']){
+  if(req.body&&req.body[key]!==undefined){const n=Number(req.body[key]);if(!Number.isInteger(n)||n<0||n>500000000)return res.status(400).json({error:'Invalid pricing settings.'});next[key]=n}
+ }
+ try{await pool.query("INSERT INTO wl_config(id,value,updated_at) VALUES('pricing',$1::jsonb,now()) ON CONFLICT (id) DO UPDATE SET value=EXCLUDED.value,updated_at=now()",[JSON.stringify(next)]);res.json({pricing:next})}catch{res.status(500).json({error:'Unable to save pricing settings.'})}
+});
 app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT id,token,client_name,company,client_email,project_id,total_cents,deposit_cents,balance_cents,status,version,invoice_no,created_at,updated_at FROM wl_proposals ORDER BY created_at DESC LIMIT 150');res.json({proposals:q.rows.map(i=>({...i,share_url:ORIGIN+'/proposal?token='+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
 });
