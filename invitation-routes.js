@@ -21,17 +21,25 @@ function phone(s){
 let heroCache=null;
 async function coverImage(origin){
  if(heroCache&&Date.now()-heroCache.time<3600000)return heroCache.data;
+ const sources=[
+  'https://images.pexels.com/photos/10375897/pexels-photo-10375897.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  origin+'/premium-v3/assets/hero-nexora-v3.webp'
+ ];
  let buffer;
- try{
-  const c=new AbortController(),timer=setTimeout(()=>c.abort(),4200);
+ for(const address of sources){
   try{
-   const r=await fetch(origin+'/premium-v3/assets/hero-marketing-v3.webp',{signal:c.signal});
-   if(!r.ok)throw Error('image failed');
-   const b=Buffer.from(await r.arrayBuffer());
-   if(b.length<2000||b.length>6000000)throw Error('image too large');
-   buffer=await sharp(b).resize(1200,420,{fit:'cover',position:'centre'}).jpeg({quality:79}).toBuffer();
-  }finally{clearTimeout(timer)}
- }catch{buffer=await sharp({create:{width:1200,height:420,channels:3,background:'#c4ddc9'}}).jpeg().toBuffer()}
+   const c=new AbortController(),timer=setTimeout(()=>c.abort(),5000);
+   try{
+    const r=await fetch(address,{signal:c.signal,headers:{Accept:'image/jpeg,image/webp,image/png'}});
+    if(!r.ok)throw Error('Image request failed');
+    const b=Buffer.from(await r.arrayBuffer());
+    if(b.length<2000||b.length>7000000)throw Error('Image invalid');
+    buffer=await sharp(b,{animated:false,limitInputPixels:22000000}).resize(1200,420,{fit:'cover',position:'centre'}).jpeg({quality:82}).toBuffer();
+    break;
+   }finally{clearTimeout(timer)}
+  }catch{}
+ }
+ if(!buffer)buffer=await sharp({create:{width:1200,height:420,channels:3,background:'#c4ddc9'}}).jpeg().toBuffer();
  heroCache={data:buffer,time:Date.now()};return buffer;
 }
 async function invitationJpeg(origin,business,tone){
