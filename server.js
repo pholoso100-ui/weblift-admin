@@ -82,7 +82,7 @@ app.patch('/api/sales/admin/catalogue/:id',authenticate,writable,requireDb,async
  try{const r=await pool.query('UPDATE wl_catalogue SET label=$2,price_cents=$3,default_hours=$4,mode=$5,updated_at=now() WHERE id=$1 RETURNING *',[toText(req.params.id,80),toText(b.label,130),price,hours,b.mode==='hourly'?'hourly':'fixed']);if(!r.rowCount)return res.sendStatus(404);res.json({item:r.rows[0]})}catch{res.status(500).json({error:'Cannot save pricing.'})}
 });
 app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
- try{const q=await pool.query('SELECT id,token,client_name,company,client_email,project_id,total_cents,deposit_cents,balance_cents,status,version,invoice_no,created_at,updated_at FROM wl_proposals ORDER BY created_at DESC LIMIT 150');res.json({proposals:q.rows.map(i=>({...i,share_url:ORIGIN+'/proposal/'+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
+ try{const q=await pool.query('SELECT id,token,client_name,company,client_email,project_id,total_cents,deposit_cents,balance_cents,status,version,invoice_no,created_at,updated_at FROM wl_proposals ORDER BY created_at DESC LIMIT 150');res.json({proposals:q.rows.map(i=>({...i,share_url:ORIGIN+'/proposal?token='+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
 });
 app.get('/api/sales/admin/events',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT event_type,proposal_id,details,created_at FROM wl_sales_events ORDER BY created_at DESC LIMIT 80');res.json({events:q.rows})}catch{res.status(500).json({error:'Cannot read sales notifications.'})}
@@ -110,7 +110,7 @@ app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,
   const q=await c.query('INSERT INTO wl_proposals(token,client_name,company,client_email,client_phone,project_id,project_url,package_code,items,base_cents,total_cents,monthly_cents,deposit_cents,balance_cents,notes,created_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12,$13,$14,$15,$16) RETURNING id,version,status,created_at',[token,name,company,toText(b.client_email,180),toText(b.client_phone,35),toText(b.project_id,90),toText(b.project_url,350),plan,JSON.stringify(calc.items),base,calc.total,monthly,calc.deposit,calc.balance,toText(b.notes,3000),req.administrator.actor]);
   await event(c,q.rows[0].id,'created',{total_cents:calc.total});
   await c.query('COMMIT');
-  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/proposal/'+token});
+  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/proposal?token='+token});
  }catch(e){await c.query('ROLLBACK').catch(()=>{});res.status(400).json({error:toText(e.message||'Cannot create quotation.',150)})}finally{c.release()}
 });
 app.get('/api/sales/proposal/:token',requireDb,async(req,res)=>{
