@@ -1,0 +1,51 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/sales/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/share",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/share-preview-demo",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/share-image/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/share-image-demo.jpg",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/your-invitation",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/invite-demo",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/invite-card/:path*",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/invite-card-demo.jpg",
+      "destination": "/api/index.js"
+    }
+  ]
+}
