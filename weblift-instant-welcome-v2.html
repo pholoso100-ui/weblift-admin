@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en-ZA"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#08251c"><meta name="robots" content="noindex,nofollow,noarchive">
+<title>Your private WebLift SA presentation</title>
+<style>
+:root{color-scheme:dark;--gold:#e6c68b;--green:#0b6348;--ink:#072218;--muted:#d3dfd5;--paper:#fffdf5}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:#06170f;color:white}
+a{color:inherit;text-decoration:none}
+#full{position:fixed;inset:0;width:100%;height:100%;height:100dvh;border:0;background:white;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .72s ease;z-index:3}
+#full.is-ready{visibility:visible;opacity:1;pointer-events:auto}
+#welcome{position:fixed;inset:0;overflow:auto;overflow-x:hidden;z-index:4;background:#061b15;opacity:1;transition:opacity .68s ease,visibility .68s ease}
+#welcome.out{opacity:0;visibility:hidden;pointer-events:none}
+.photo{position:fixed;inset:0;background:#123c31 center /cover no-repeat;opacity:.48;transform:scale(1.035);transition:opacity .5s ease,transform 7s ease}
+#photo2{opacity:0}
+#welcome::after{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(2,17,13,.96) 0%,rgba(5,28,22,.92) 44%,rgba(7,31,22,.53) 100%),linear-gradient(0deg,#081b17aa,transparent 36%,#041a15b5);z-index:0}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:1;background-image:radial-gradient(#fff2 0.4px,transparent .7px);background-size:6px 6px;opacity:.16}
+.shell{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;max-width:1450px;margin:auto;padding:clamp(21px,4vw,62px) clamp(22px,7vw,102px) 24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:flex;align-items:center;gap:15px}
+.brand img{max-width:145px;width:clamp(102px,10vw,145px);max-height:57px;object-fit:contain;filter:drop-shadow(0 3px 15px #0007)}
+.brandname{font-size:clamp(19px,2vw,26px);font-weight:800;letter-spacing:-.04em}
+.location{font-size:10px;font-weight:750;letter-spacing:.19em;color:var(--gold);text-transform:uppercase;padding:10px 14px;border:1px solid #dcbf8066;border-radius:100px;background:#0c302c77;white-space:nowrap}
+.main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(250px,.85fr);gap:clamp(36px,6vw,96px);align-items:center;flex:1;min-height:530px;padding:42px 0}
+.copy{max-width:770px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:800;letter-spacing:.19em;text-transform:uppercase;color:var(--gold)}
+.eyebrow:before{content:"";height:2px;width:33px;background:var(--gold)}
+h1{font-size:clamp(46px,5.9vw,88px);line-height:1.035;letter-spacing:-.063em;margin:28px 0 22px;font-weight:780;text-wrap:balance}
+h1 em{font-weight:480;font-family:Georgia,"Times New Roman",serif;color:var(--gold);letter-spacing:-.036em}
+p{font-size:clamp(16px,1.5vw,21px);color:var(--muted);line-height:1.75;max-width:620px;margin:0}
+#slidecopy{transition:opacity .34s ease,transform .34s ease}
+#slidecopy.changing{opacity:0;transform:translateY(11px)}
+.pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:35px}
+.pill{font-size:11px;color:#f0e3c7;background:#193d35c7;border:1px solid #c5aa703f;border-radius:100px;padding:11px 14px;font-weight:700}
+.visual{position:relative;min-height:430px;display:flex;align-items:center;justify-content:center}
+.arc{position:absolute;width:90%;aspect-ratio:1;border:1px solid #efdcb531;border-radius:50%;transform:rotate(-23deg)}
+.arc::before{content:"";position:absolute;inset:13%;border:1px solid #efdcb525;border-radius:50%}
+.visual-card{width:min(100%,420px);min-height:355px;background:linear-gradient(148deg,#245746a8,#051b17bd);border:1px solid #e8ce8d5b;box-shadow:0 28px 90px #010f0bae,inset 0 1px #ffffff26;border-radius:28px;backdrop-filter:blur(18px);padding:28px;transform:rotate(3deg)}
+.visual-top{display:flex;justify-content:space-between;align-items:center;gap:16px;color:#d3e4da;font-size:12px;letter-spacing:.13em;text-transform:uppercase;font-weight:700}
+.visual-top b{font-size:25px;color:var(--gold);letter-spacing:0}
+.signature{font-family:Georgia,serif;font-style:italic;font-size:clamp(33px,3vw,49px);line-height:1.2;margin:60px 0 17px;color:#fff6e8}
+.visual-card p{font-size:14px;line-height:1.6}
+.visual-line{height:1px;margin-top:40px;background:linear-gradient(90deg,#e7c588,transparent)}
+.ribbon{position:absolute;right:-8px;bottom:24px;border-radius:12px;background:#fbf2db;color:#17543b;padding:13px 18px;font-size:12px;font-weight:800;box-shadow:0 14px 32px #02190e7a;transform:rotate(-4deg)}
+footer{border-top:1px solid #efe2bd38;padding:20px 0 6px;display:flex;gap:19px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.loading{display:flex;gap:12px;align-items:center;color:#f9e8c5;font-size:13px;font-weight:650}
+.wheel{width:18px;height:18px;border-radius:50%;border:2px solid #fffff52b;border-top-color:var(--gold);animation:spin .85s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress{position:relative;height:3px;width:min(170px,25vw);overflow:hidden;background:#ffffff38;border-radius:6px}
+.progress:after{content:"";position:absolute;left:-45%;width:45%;height:100%;background:var(--gold);animation:move 1.75s ease-in-out infinite}
+@keyframes move{to{left:115%}}
+.actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.actions a,.actions button{border:0;background:none;color:#e5edde;font-size:12px;font-weight:750;cursor:pointer}
+.actions .visit{color:var(--gold)}
+#status{display:block;color:#f9e3b3;font-size:12px;line-height:1.6;min-height:20px;margin-top:18px}
+.dots{display:flex;gap:10px;margin-top:36px}
+.dots span{height:5px;width:24px;border-radius:7px;background:#faf5e352;transition:width .35s,background .35s}
+.dots span.active{width:49px;background:var(--gold)}
+#retry{display:none;margin-top:14px;border:1px solid #e4cd8d8c;border-radius:100px;padding:11px 19px;background:#174b37a1;color:white;font-size:12px;font-weight:750;cursor:pointer}
+@media(max-width:860px){.main{grid-template-columns:1fr;gap:7px;min-height:auto;padding:60px 0 20px}.visual{display:none}.shell{min-height:100dvh}#welcome::after{background:linear-gradient(90deg,#071c17f5,#0b2c22d2),linear-gradient(0deg,#082019,#071c1700 60%)}h1{font-size:clamp(43px,9vw,70px);margin:27px 0 19px}.pills{margin-top:24px}.location{font-size:9px}footer{padding-top:19px}.loading{flex-wrap:wrap}}
+@media(max-width:420px){.shell{padding:23px 22px 19px}.brand img{max-width:90px}.brandname{font-size:20px}h1{font-size:44px}.main{padding:55px 0 40px}.location{font-size:8px;letter-spacing:.11em;padding:8px 10px}.pills{gap:7px}.pill{padding:9px 11px;font-size:10px}.progress{width:105px}}
+@media(prefers-reduced-motion:reduce){.photo,#slidecopy,#welcome,#full{transition:none}.wheel,.progress:after{animation:none}}
+
+/* WebLift SA — Version 2: warm editorial luxury, not a monochrome green splash. */
+:root{--gold:#ac8146;--muted:#49525a;--paper:#f7f4eb;--ink:#161e24}
+body{background:#f7f4eb;color:var(--ink)}
+#welcome{background:#f5f0e5;color:var(--ink)}
+#welcome:after{background:linear-gradient(90deg,#f8f5eedc 0%,#f8f5eefa 10%,#faf6eff7 36%,#eee7d9cb 53%,#19232a30 75%,#161b2066 100%),linear-gradient(0deg,#171d2439,transparent 42%);z-index:0}
+.photo{background-color:#7c756a;opacity:.95;transform:scale(1.03);filter:saturate(.98) contrast(1.02)}
+#photo2{opacity:0}
+.grain{opacity:.11;background-image:radial-gradient(#806a5120 0.6px,transparent .75px)}
+.shell{padding-top:clamp(25px,4vw,57px);padding-bottom:23px}
+header{position:relative;padding-bottom:21px;border-bottom:1px solid #4030232b}
+.brand img{filter:drop-shadow(0 3px 12px #15151519);max-width:148px}
+.brandname{color:#222d2d;font-size:clamp(20px,2.1vw,27px);letter-spacing:-.055em}
+.brandname span{color:#b18b54!important}
+.location{color:#6d5439;background:#fffcf48a;border:1px solid #7c604045;font-size:10px;box-shadow:0 5px 24px #bca77b13}
+.main{min-height:540px;padding:34px 0 30px}
+.eyebrow{color:#98703f;font-size:12px;letter-spacing:.22em}
+.eyebrow:before{background:linear-gradient(90deg,#b7894b,#e9d1a6);width:44px}
+.copy{max-width:755px}
+h1{color:#1b292c;font-weight:740;font-size:clamp(52px,6.15vw,92px);letter-spacing:-.065em;margin:24px 0 22px;line-height:1.06}
+h1 em{color:#a57843;font-weight:400}
+p{color:#45515a;font-size:clamp(17px,1.55vw,21px);line-height:1.8;max-width:630px}
+.pills{gap:9px;margin-top:34px}
+.pill{font-size:11px;background:#fffaf1dc;border:1px solid #d4bf9f98;color:#50564e;padding:11px 15px;box-shadow:0 4px 15px #61472b07;letter-spacing:.01em}
+.visual{min-height:465px}
+.arc{border-color:#f1d6a87a;box-shadow:0 0 30px #1a171522}
+.arc:before{border-color:#ffe9c36b}
+.visual-card{width:min(100%,400px);min-height:390px;background:linear-gradient(145deg,#1c3336e8,#151e27df);border:1px solid #f0d8acb0;box-shadow:0 25px 85px #0d111e67,inset 0 1px #ffffff2d;backdrop-filter:blur(19px);border-radius:20px;padding:31px;transform:rotate(2.2deg)}
+.visual-top{color:#e1dccf}
+.visual-top b{color:#efd29d}
+.signature{font-size:clamp(37px,3.5vw,51px);margin:63px 0 22px;color:#fef8ed;line-height:1.15}
+.visual-card p{font-size:14px;line-height:1.8;color:#dae2db}
+.visual-line{background:linear-gradient(90deg,#e9c98d,transparent);margin-top:40px}
+.ribbon{color:#493629;background:#f6e5c6;font-size:12px;border:1px solid #d7b37c;box-shadow:0 11px 33px #14141429;letter-spacing:.01em}
+.dots{margin-top:31px}
+.dots span{background:#a49d904d}
+.dots span.active{background:#af824a}
+#status{font-size:13px;color:#72604b;min-height:22px;margin-top:18px}
+footer{background:#fffaf259;border-top:1px solid #bda58369;padding:20px 7px 8px;border-radius:0 0 8px 8px}
+.loading{color:#756042;font-size:13px}
+.wheel{border-color:#cabca99c;border-top-color:#a47942}
+.progress{background:#aa987c5a}
+.progress:after{background:linear-gradient(90deg,#c49b5c,#946c38)}
+.actions a,.actions button{color:#484c47}
+.actions .visit{color:#986936}
+#retry{color:#fdf8ef;background:#4e5a4d;border:1px solid #a98b5b}
+#enter{color:#9c7446}
+#full{transition:opacity .92s cubic-bezier(.22,1,.36,1)}
+#welcome{transition:opacity .92s cubic-bezier(.22,1,.36,1),visibility .92s}
+#slidecopy{transition:opacity .43s ease,transform .43s ease}
+@media(max-width:860px){
+ .shell{min-height:100dvh;padding-top:24px}
+ .main{padding:55px 0 37px;display:flex;align-items:flex-start;flex-direction:column}
+ .photo{background-position:60% center;opacity:.73}
+ #welcome:after{background:linear-gradient(90deg,#f7f3eaf7 0%,#f9f6eefa 18%,#f9f6edeb 65%,#d3c8acb8 100%),linear-gradient(0deg,#f1e7d9cc,transparent 60%)}
+ .visual{display:none}
+ h1{font-size:clamp(46px,9.5vw,73px)}
+ p{max-width:630px}
+ .pills{margin-top:29px}
+ footer{border-radius:0}
+}
+@media(max-width:420px){
+ .shell{padding:20px 22px 18px}
+ header{padding-bottom:17px}
+ .main{padding:48px 0 37px}
+ h1{font-size:clamp(43px,11.5vw,53px);margin:25px 0 17px}
+ p{font-size:16px;line-height:1.72}
+ .pill{padding:9px 11px;font-size:10px}
+ .location{font-size:8px;letter-spacing:.10em;padding:8px 9px}
+}
+@media(prefers-reduced-motion:reduce){#full,#welcome,#slidecopy{transition:none}.wheel,.progress:after{animation:none}}
+
+</style></head><body>
+<iframe id="full" title="Your secure WebLift SA invitation or quotation" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<section id="welcome" aria-live="polite">
+<div class="photo" id="photo1"></div><div class="photo" id="photo2"></div><div class="grain"></div>
+<div class="shell">
+<header><div class="brand"><img src="https://weblift-sa.vercel.app/premium-v3/assets/weblift-email-logo.png" alt="WebLift SA" onerror="this.style.display='none'"><span class="brandname">WebLift SA<span style="color:var(--gold)">.</span></span></div><div class="location">Pretoria · South Africa</div></header>
+<div class="main">
+<div class="copy">
+<div class="eyebrow" id="kicker">A sincere note from WebLift SA</div>
+<div id="slidecopy"><h1 id="heading">Great businesses deserve <em>great beginnings.</em></h1><p id="subheading">Thank you for trusting us with a moment of your time. Your presentation is preparing in the background.</p></div>
+<div class="pills"><span class="pill">Premium Websites</span><span class="pill">Digital Marketing</span><span class="pill">Business Automation</span><span class="pill">Brand Identity</span></div>
+<div class="dots" id="dots" aria-label="Introduction slides"></div>
+<button type="button" id="retry">Retry loading your presentation ↗</button>
+<div id="status">A personal welcome while we prepare your presentation, securely in the background.</div>
+</div>
+<div class="visual" aria-hidden="true"><div class="arc"></div><div class="visual-card"><div class="visual-top"><span>WEBLIFT SA / 2026</span><b>✦</b></div><div class="signature">Your next chapter starts here.</div><p>Purposeful technology.<br>Beautiful design.<br>Made for South African businesses.</p><div class="visual-line"></div></div><div class="ribbon">Growing businesses. Building futures. ↗</div></div>
+</div>
+<footer><div class="loading"><span class="wheel" aria-hidden="true"></span><span id="loadingText">Creating your premium presentation experience</span><span class="progress" aria-hidden="true"></span></div><div class="actions"><a class="visit" href="https://weblift-sa.vercel.app/" target="_blank" rel="noopener">Explore WebLift SA ↗</a><button id="enter" type="button" style="display:none">Enter presentation →</button></div></footer>
+</div></section>
+<script>
+(function(){
+"use strict";
+var pathname=window.location.pathname.toLowerCase();
+var type=pathname.indexOf("your-invitation")!==-1||pathname.indexOf("invite-demo")!==-1?"invitation":"proposal";
+var source=pathname.indexOf("your-invitation")!==-1?"/your-invitation-content":pathname.indexOf("invite-demo")!==-1?"/invite-demo-content":pathname.indexOf("share-preview-demo")!==-1?"/share-preview-demo-content":"/proposal-content";
+var params=window.location.search||"";
+var slides=[
+ ["A sincere note from WebLift SA","Great businesses deserve <em>great beginnings.</em>","Thank you for trusting us with a moment of your time. We would love to show you what thoughtful design can make possible.","/premium-v3/assets/hero-nexora-v3.webp"],
+ ["Who we are","South African roots. <em>World-class ambition.</em>","From Pretoria to businesses across South Africa, we bring thoughtful design, digital strategy and technology together.","/premium-v3/assets/dental.jpg"],
+ ["What we can do","More than websites. <em>Real possibilities.</em>","Websites, digital marketing, branding and intelligent business tools—all designed to help your business be seen, trusted and remembered.","/premium-v3/assets/ndo-architecture.webp"],
+ ["We value your trust","A partnership worth <em>building.</em>","Thank you for considering us. We look forward to earning your confidence, understanding your vision and growing with you.","/premium-v3/assets/restaurant.jpg"]
+];
+var current=0, stopped=false, ready=false, revealQueued=false, failed=false, started=Date.now(), frame=document.getElementById("full"), progress=document.getElementById("loadingText"), status=document.getElementById("status"), retry=document.getElementById("retry"), welcome=document.getElementById("welcome"), dots=document.getElementById("dots"), img=document.getElementById("photo1"), next=document.getElementById("photo2"), active=img, inactive=next;
+function showSlide(i){
+ if(stopped)return;
+ var row=slides[i],copy=document.getElementById("slidecopy");
+ copy.classList.add("changing");
+ window.setTimeout(function(){
+  document.getElementById("kicker").textContent=row[0];
+  document.getElementById("heading").innerHTML=row[1];
+  document.getElementById("subheading").textContent=row[2];
+  for(var j=0;j<dots.children.length;j++)dots.children[j].classList.toggle("active",j===i);
+  copy.classList.remove("changing");
+ },210);
+ inactive.style.backgroundImage='url("https://weblift-sa.vercel.app'+row[3]+'")';
+ inactive.style.opacity=".54";active.style.opacity="0";
+ var hold=active;active=inactive;inactive=hold;
+}
+for(var i=0;i<slides.length;i++){var dot=document.createElement("span");if(i===0)dot.className="active";dots.appendChild(dot)}
+img.style.backgroundImage='url("https://weblift-sa.vercel.app'+slides[0][3]+'")';
+window.setInterval(function(){if(stopped)return;current=(current+1)%slides.length;showSlide(current)},5200);
+// Always reserve four full seconds for the client's first impression.
+var MIN_WELCOME_MS=4000;
+function reveal(){
+ if(ready||revealQueued)return;
+ var remaining=MIN_WELCOME_MS-(Date.now()-started);
+ if(remaining>0){
+  revealQueued=true;
+  progress.textContent="Your presentation is ready — opening shortly";
+  window.setTimeout(function(){revealQueued=false;reveal()},remaining);
+  return;
+ }
+ ready=true;stopped=true;document.getElementById("enter").style.display="";
+ frame.classList.add("is-ready");welcome.classList.add("out");
+ progress.textContent="Your presentation is ready";
+ window.setTimeout(function(){welcome.remove()},1120);
+}
+function message(text){status.textContent=text}
+function isRendered(){
+ try{
+  var doc=frame.contentDocument;if(!doc)return false;
+  var app=doc.getElementById("app");
+  if(app && !app.hidden){reveal();return true}
+  var loading=doc.getElementById("loading");
+  if(loading&&loading.querySelector("h2")&&/unavailable/i.test(loading.textContent||"")){
+    failed=true;message("Your presentation is taking longer than expected. Please retry, or contact WebLift SA for assistance.");retry.style.display="inline-block";
+  }
+ }catch(e){
+  // If a future hosting change prevents inspecting the frame, do not falsely claim readiness.
+  message("We are securely connecting to your presentation. Thank you for waiting.");
+ }
+ return false;
+}
+var poll=window.setInterval(function(){
+ if(ready){window.clearInterval(poll);return}
+ isRendered();
+ if(!failed && Date.now()-started>16000){
+  message("Thank you for your patience. Your presentation is still being prepared.");
+  retry.style.display="inline-block";
+ }
+},420);
+frame.addEventListener("load",isRendered);
+retry.addEventListener("click",function(){failed=false;retry.style.display="none";started=Date.now();message("Trying again. Thank you for giving us this opportunity.");frame.src=source+params;});
+document.getElementById("enter").addEventListener("click",function(){if(ready)reveal()});
+frame.src=source+params;
+})();
+</script></body></html>
