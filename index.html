@@ -29,7 +29,7 @@
 <option value="overview">Overview &amp; visitors</option><option value="mail">Email inbox</option><option value="guests">Clients &amp; guest accounts</option><option value="team">Administrator team</option><option value="brand">Email branding</option><option value="activity">Activity history</option>
 </optgroup>
 <optgroup label="Commercial operations">
-<option value="quotation">Premium quotation studio</option><option value="sales">Existing sales pricing</option><option value="dropshipping">Dropshipping management</option>
+<option value="quotation">Premium quotation studio</option><option value="invitations">Client invitations &amp; marketing</option><option value="sales">Existing sales pricing</option><option value="dropshipping">Dropshipping management</option>
 </optgroup>
 </select></div>
 <div class="bar-actions"><span id="section-label">Overview &amp; visitors</span></div>
@@ -71,5 +71,50 @@
 <p class="fine caution">Private proposal links and official invoices are available only after WebLift confirms the administrator session and database. Print/PDF creates a draft, not an issued invoice. Client approval then locks the agreed prices and creates a 75% deposit invoice.</p><div id="quote-status" role="status"></div>
 </div></aside></div>
 </section>
+
+<section id="invitation-studio" class="page-pane invite-admin" hidden>
+<div class="invite-admin-intro"><div><div class="eyebrow">WEBLIFT SA / CLIENT CONNECTIONS</div><h2>An invitation worth opening<span class="gold">.</span></h2><p>Make someone feel seen. Introduce your services, thank them for the opportunity—or ask for a chance to show what WebLift can do.</p></div><span class="invite-chip">🇿🇦 PERSONAL · PROFESSIONAL · SOUTH AFRICAN</span></div>
+<div class="invite-admin-grid">
+<div class="invite-admin-form">
+<form id="inv-create-form">
+<div class="invite-panel"><div class="section-top"><span class="stepnumber">01</span><div><h3>Who are we inviting?</h3><p>Name and contact number are essential. Email is completely optional.</p></div></div>
+<div class="invite-fields"><label>Person's name <span class="req">*</span><input id="inv-name" name="recipient_name" type="text" maxlength="100" autocomplete="off" placeholder="e.g. Bongani Madlebe" required></label>
+<label>Business name <span class="req">*</span><input id="inv-business" name="business_name" type="text" maxlength="120" placeholder="e.g. Bongani Design Studio" required></label>
+<label>Contact / WhatsApp <span class="req">*</span><input id="inv-phone" name="phone" type="tel" inputmode="tel" maxlength="26" placeholder="e.g. 082 123 4567" required></label>
+<label>Email <span class="optional">optional</span><input id="inv-email" name="email" type="email" maxlength="180" placeholder="Leave blank if unavailable"></label></div></div>
+<div class="invite-panel"><div class="section-top"><span class="stepnumber">02</span><div><h3>Choose the invitation style</h3><p>Select a message based on your relationship with the customer.</p></div></div>
+<div class="invite-modes"><label class="invite-mode"><input type="radio" name="inv-tone" value="grateful" checked><span><strong>Thank you for the opportunity</strong><small>For a client you've already spoken to, or who has allowed you to prepare a website concept.</small></span></label>
+<label class="invite-mode"><input type="radio" name="inv-tone" value="opportunity"><span><strong>We'd love a chance to work with you</strong><small>For a prospective client you want to inspire and invite to explore WebLift.</small></span></label></div></div>
+<div class="invite-panel"><div class="section-top"><span class="stepnumber">03</span><div><h3>Choose what to highlight</h3><p>The presentation still introduces all WebLift services. These selections appear first as your recommendations.</p></div></div>
+<div class="invite-services" id="inv-service-choices">
+<label><input type="checkbox" value="websites" checked> Website design</label>
+<label><input type="checkbox" value="domains" checked> Domains &amp; email</label>
+<label><input type="checkbox" value="marketing" checked> Marketing plans</label>
+<label><input type="checkbox" value="social" checked> Social media</label>
+<label><input type="checkbox" value="seo" checked> Google SEO</label>
+<label><input type="checkbox" value="ads"> Google &amp; Meta ads</label>
+<label><input type="checkbox" value="design" checked> Branding &amp; print</label>
+<label><input type="checkbox" value="support"> Updates &amp; care</label>
+<label><input type="checkbox" value="commerce"> Online commerce</label>
+<label><input type="checkbox" value="nexora"> Nexora ecosystem</label>
+</div>
+<label class="invite-note">Your personal message <span class="optional">optional</span><textarea id="inv-message" maxlength="750" rows="4" placeholder="For example: Thank you for meeting with us today. We enjoyed learning about your company and would love to show you the design concept we discussed."></textarea></label>
+<label class="invite-note">Website concept to showcase <span class="optional">optional</span><select id="inv-project-select"><option value="">No project website attached</option></select></label>
+<label class="invite-note">Or enter a public concept website address <span class="optional">optional</span><input id="inv-project-url" type="url" placeholder="https://your-client-preview.example"></label>
+<p class="invite-help">Only public HTTPS website previews can be embedded. The customer can open the full site when embedding is restricted.</p>
+</div>
+<div class="invite-panel invite-confirm"><label><input id="inv-permission" type="checkbox" required><span>I confirm WebLift has an appropriate reason to contact this person about this business proposal, and I will respect any request not to be contacted again.</span></label>
+<button id="inv-create" type="submit" class="primary-action wide">Create personalised invitation ↗</button><div id="inv-form-status" role="status" aria-live="polite" class="inv-feedback"></div></div>
+</form>
+</div>
+<aside class="invite-admin-side">
+<div class="invite-panel invite-preview"><div class="eyebrow">THE CLIENT EXPERIENCE</div><h3>More than a message. A memorable invitation.</h3>
+<div class="invite-mini"><span>WEBLIFT SA · SOUTH AFRICA</span><strong id="inv-live-headline">Thank you for the opportunity.</strong><p id="inv-live-business">A personalised presentation prepared especially for your business.</p><div>WEB DESIGN ✦ MARKETING ✦ COMMUNITY</div></div>
+<p>Every link introduces your client to website services, ongoing marketing, creative design and the wider Nexora vision.</p>
+<a href="/invite-demo" target="_blank" rel="noopener noreferrer" class="secondary-action wide" style="text-align:center;display:block;text-decoration:none">View public invitation demo ↗</a></div>
+<div id="inv-share-card" class="invite-panel" hidden><div class="eyebrow">YOUR PRIVATE INVITATION LINK</div><h3>Ready to share</h3><input id="inv-share-url" type="text" readonly aria-label="Private invitation URL">
+<div class="inv-share-buttons"><button id="inv-copy" class="secondary-action" type="button">Copy link</button><a id="inv-whatsapp" class="primary-action" target="_blank" rel="noopener noreferrer">Send on WhatsApp ↗</a><a id="inv-email-share" class="secondary-action" hidden>Email ↗</a><a id="inv-open" class="secondary-action" target="_blank" rel="noopener noreferrer">View page ↗</a></div><small>No message is sent automatically. WhatsApp and email open ready to review before sending.</small></div>
+<div class="invite-panel"><div class="invite-activity-head"><div><div class="eyebrow">LIVE INVITATIONS</div><h3>Outreach activity</h3></div><button id="inv-refresh" type="button" class="secondary-action">Refresh</button></div><p class="invite-help">Track created links, page opens and customer interest. Creating a link does not mean it was sent.</p><div id="inv-history" class="inv-history">Open this section to load invitation activity.</div></div>
+</aside></div></section>
 </section>
 </main><script type="module" src="/workspace.js"></script></body></html>
