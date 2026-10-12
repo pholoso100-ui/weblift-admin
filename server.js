@@ -30,7 +30,7 @@ async function initialise(){
  try{
   const c=await pool.connect();
   try{
-   await c.query(readFileSync('schema.sql','utf8'));
+   await c.query(readFileSync(new URL('./schema.sql',import.meta.url),'utf8'));
    for(const item of seed)await c.query('INSERT INTO wl_catalogue(id,label,price_cents,mode,default_hours) VALUES($1,$2,$3,$4,$5) ON CONFLICT(id) DO NOTHING',item);
    await c.query("INSERT INTO wl_config(id,value) VALUES('pricing',$1::jsonb) ON CONFLICT(id) DO NOTHING",[JSON.stringify({rate_cents:19900,plan_A_cents:200000,plan_B_cents:300000,monthly_A_cents:70000})]);
    ready=true;problem='';
