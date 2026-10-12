@@ -54,11 +54,11 @@ export async function activateSalesBridge(read){
     project_id:project.name.replace(/&amp;/g,'&'),project_url:project.url,package_code:read.plan(),notes:$('proposal-notes').value,
     selections:items.map(i=>({id:mapping[i.id]||i.id,selected:!!i.selected,qty:i.qty||1,hours:i.hours||0}))
    })});
-   if(!/^https:\/\/weblift-sa\.vercel\.app\/proposal\?token=/.test(out.share_url||''))throw Error('The server did not issue a valid private link.');
+   if(!/^https:\/\/weblift-sa\.vercel\.app\/share\?token=/.test(out.share_url||''))throw Error('The server did not issue a valid private link.');
    $('share-link').value=out.share_url;sharing.hidden=false;
    const number=$('client-phone').value.replace(/\D/g,'');
    const formatted=number.length===10&&number[0]==='0'?'27'+number.slice(1):number;
-   const message='WebLift SA: your personalised website quotation is ready. '+out.share_url;
+   const message='A first look at your website, prepared by WebLift SA 🇿🇦\n'+out.share_url+'\nOpen your private website preview and quotation to review the project.';
    $('share-whatsapp').href='https://wa.me/'+(formatted.length>=10?formatted:'')+'?text='+encodeURIComponent(message);
    $('share-email').href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('WebLift SA website quotation')+'&body='+encodeURIComponent(message);
    read.notify('Your proposal has been saved. The private link is ready to share.');
