@@ -110,7 +110,7 @@ const ORIGINAL=[
 {id:"estimator",name:"Interactive quotation estimator",desc:"Fixed published price",price:1000,core:true,group:"Core integrations"},
 {id:"email",name:"Two business email addresses setup",desc:"Fixed published price",price:700,core:true,group:"Core integrations"},
 {id:"domain",name:"Domain setup & maintenance package",desc:"Fixed published price; third-party fees separate",price:2000,core:true,group:"Core integrations"},
-{id:"pages",name:"Additional website page",desc:"Per page; set quantity in notes for client proposal",price:350,group:"Design & content"},
+{id:"pages",name:"Additional website page",desc:"Fixed published rate per page; select quantity",price:350,group:"Design & content"},
 {id:"gallery",name:"Photo gallery / projects showcase",desc:"Fixed published price",price:500,group:"Design & content"},
 {id:"reviews",name:"Testimonials section",desc:"Fixed published price",price:300,group:"Design & content"},
 {id:"bookings",name:"Appointment booking system",desc:"Fixed published price",price:1200,group:"Customer tools"},
@@ -136,10 +136,10 @@ function secureDraftRead(){
   const savedById=new Map(a.items.filter(x=>typeof x.id==="string").map(x=>[x.id,x]));
   for(const item of base){
    const s=savedById.get(item.id);
-   if(s){item.price=cleanNum(s.price);item.hours=cleanNum(s.hours);item.selected=!!s.selected}
+   if(s){item.price=cleanNum(s.price);item.hours=cleanNum(s.hours);item.qty=Math.max(1,Math.floor(cleanNum(s.qty??1)));item.selected=!!s.selected}
   }
   for(const s of a.items){
-    if(!base.some(x=>x.id===s.id)&&s.custom&&typeof s.name==="string")base.push({...s,price:cleanNum(s.price),hours:cleanNum(s.hours),selected:!!s.selected,mode:s.mode==="hourly"?"hourly":"fixed"});
+    if(!base.some(x=>x.id===s.id)&&s.custom&&typeof s.name==="string")base.push({...s,price:cleanNum(s.price),hours:cleanNum(s.hours),qty:Math.max(1,Math.floor(cleanNum(s.qty??1))),selected:!!s.selected,mode:s.mode==="hourly"?"hourly":"fixed"});
   }
   return{rate:cleanNum(a.rate??199),plan:["A","B","custom"].includes(a.plan)?a.plan:"B",projectId:"",items:base}
  }catch{return{rate:199,items:base,plan:"B",projectId:""}}
@@ -204,7 +204,7 @@ function loadPortfolio(){
 }
 function lineTotal(item){
  if(!item.selected||quote.plan==="A"&&item.core)return 0;
- return item.mode==="hourly"?Math.round(cleanNum(item.hours)*quote.rate*100)/100:cleanNum(item.price);
+ return item.mode==="hourly"?Math.round(cleanNum(item.hours)*quote.rate*100)/100:Math.round(cleanNum(item.price)*Math.max(1,Math.floor(cleanNum(item.qty??1)))*100)/100;
 }
 function lines(){
  const plan=quote.plan,base=plan==="A"?2000:plan==="B"?3000:0;
@@ -214,7 +214,7 @@ function lines(){
 function buildQuote(){
  const info=lines();const total=Math.round((info.base+info.chosen.reduce((s,i)=>s+i.amount,0))*100)/100,deposit=Math.round(total*.75*100)/100,balance=Math.round((total-deposit)*100)/100;
  const p=portfolio.find(x=>x.id===quote.projectId);
- return {documentType:"UNISSUED_QUOTATION_DRAFT",createdAt:new Date().toISOString(),client:{projectName:p?.name||"",projectUrl:p?.url||"",email:$("client-email").value.trim(),whatsapp:$("client-phone").value.trim(),reference:$("project-reference").value.trim()},package:quote.plan,items:info.chosen.map(x=>({name:x.name,mode:x.mode,hours:x.mode==="hourly"?x.hours:null,rate:x.mode==="hourly"?quote.rate:null,unitPrice:x.mode==="fixed"?x.price:null,included:x.included,amount:x.amount})),base:info.base,total,deposit,balance,monthly:info.monthly,vat:0,notes:$("proposal-notes").value,terms:"75% deposit in advance and 25% immediately after website is live and operational. Supplier not VAT registered.",issued:false,accepted:false,paid:false};
+ return {documentType:"UNISSUED_QUOTATION_DRAFT",createdAt:new Date().toISOString(),client:{projectName:p?.name||"",projectUrl:p?.url||"",email:$("client-email").value.trim(),whatsapp:$("client-phone").value.trim(),reference:$("project-reference").value.trim()},package:quote.plan,items:info.chosen.map(x=>({name:x.name,mode:x.mode,hours:x.mode==="hourly"?x.hours:null,quantity:x.mode==="fixed"?(x.qty??1):null,rate:x.mode==="hourly"?quote.rate:null,unitPrice:x.mode==="fixed"?x.price:null,included:x.included,amount:x.amount})),base:info.base,total,deposit,balance,monthly:info.monthly,vat:0,notes:$("proposal-notes").value,terms:"75% deposit in advance and 25% immediately after website is live and operational. Supplier not VAT registered.",issued:false,accepted:false,paid:false};
 }
 function buildDraftText(){
  const q=buildQuote();
@@ -237,7 +237,7 @@ function renderItems(){
   if(item.custom&&canQuoteEdit()){const nm=document.createElement("input");nm.type="text";nm.maxLength=110;nm.value=item.name;nm.setAttribute("aria-label","Custom service title");nm.onchange=()=>{item.name=nm.value.trim()||"Custom service";persistPriceDraft();renderSummary()};title.append(nm)}else{const label=document.createElement("span");label.textContent=item.name;title.append(label)}
   const sub=document.createElement("small");sub.textContent=coreIncluded?"Included in package A":item.mode==="hourly"?"R"+quote.rate+" / hour":item.desc||"Fixed charge";title.append(sub);row.append(title);
   const field=document.createElement("div");field.className="field-mini";const edit=document.createElement("input");edit.type="number";edit.min="0";edit.step=".01";edit.value=item.mode==="fixed"?item.price:quote.rate*item.hours;edit.disabled=item.mode!=="fixed"||!canQuoteEdit();edit.title="Fixed selling price R";edit.onchange=()=>{item.price=cleanNum(edit.value);persistPriceDraft();renderSummary()};field.append(edit);const small=document.createElement("small");small.textContent=item.mode==="fixed"?"Price / R":"Calculated";field.append(small);row.append(field);
-  const hField=document.createElement("div");hField.className="field-mini";const hrs=document.createElement("input");hrs.type="number";hrs.min="0";hrs.step=".25";hrs.value=item.mode==="hourly"?item.hours:0;hrs.disabled=item.mode!=="hourly"||!canQuoteEdit();hrs.title="Estimated hours";hrs.onchange=()=>{item.hours=cleanNum(hrs.value);persistPriceDraft();renderItems()};hField.append(hrs);const hsm=document.createElement("small");hsm.textContent="Hours";hField.append(hsm);row.append(hField);
+  const hField=document.createElement("div");hField.className="field-mini";const hrs=document.createElement("input");hrs.type="number";hrs.min="0";hrs.step=item.mode==="hourly"?".25":"1";hrs.value=item.mode==="hourly"?item.hours:(item.qty??1);hrs.disabled=!canQuoteEdit()||coreIncluded;hrs.title=item.mode==="hourly"?"Estimated labour hours":"Number of units";hrs.onchange=()=>{if(item.mode==="hourly")item.hours=cleanNum(hrs.value);else item.qty=Math.max(1,Math.floor(cleanNum(hrs.value)));persistPriceDraft();renderItems()};hField.append(hrs);const hsm=document.createElement("small");hsm.textContent=item.mode==="hourly"?"Hours":"Qty";hField.append(hsm);row.append(hField);
   const amount=document.createElement("div");amount.className="service-price";amount.textContent=coreIncluded?"Included":money(item.mode==="hourly"?quote.rate*item.hours:item.price);row.append(amount);
   list.append(row)
  });renderSummary();
@@ -245,10 +245,11 @@ function renderItems(){
 function renderSummary(){
  if(!quoteLoaded)return;
  const q=buildQuote();
+ $("print-meta").textContent="Project: "+(q.client.projectName||"Not specified")+" | Reference: "+(q.client.reference||"Pending")+" | Email: "+(q.client.email||"Not specified")+" | WhatsApp: "+(q.client.whatsapp||"Not specified")+" | Preview: "+q.client.projectUrl+" | Scope: "+(q.notes||"To be confirmed")+" | Webliftsa T/A Mr P E Tlatsi · African Bank · VAT not charged · Draft only.";
  const sum=$("summary-rows");sum.replaceChildren();
  const base=document.createElement("div");base.className="summary-line";const a=document.createElement("span");a.textContent="Website package "+q.package;const b=document.createElement("b");b.textContent=money(q.base);base.append(a,b);sum.append(base);
  for(const item of q.items){
-  const row=document.createElement("div");row.className="summary-line";const label=document.createElement("span"),value=document.createElement("b");label.textContent=item.name+(item.included?" (included)":"");value.textContent=item.included?"Included":money(item.amount);row.append(label,value);sum.append(row)
+  const row=document.createElement("div");row.className="summary-line";const label=document.createElement("span"),value=document.createElement("b");label.textContent=item.name+(item.included?" (included)":"");value.textContent=item.included?"Included":money(item.amount);if(item.quantity>1)label.textContent+=" × "+item.quantity;row.append(label,value);sum.append(row)
  }
  $("amount-total").textContent=money(q.total);$("amount-deposit").textContent=money(q.deposit);$("amount-balance").textContent=money(q.balance);$("monthly-row").hidden=q.monthly<=0;$("amount-monthly").textContent=money(q.monthly);
 }
