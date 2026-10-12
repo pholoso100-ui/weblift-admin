@@ -198,19 +198,112 @@ app.post('/api/sales/proposal/:token/action',requireDb,async(req,res)=>{
 });
 app.get('/api/sales/proposal/:token/invoice.pdf',requireDb,async(req,res)=>{
  if(!validToken(req.params.token))return res.sendStatus(404);
- const q=await pool.query("SELECT * FROM wl_proposals WHERE token=$1 AND status='accepted'",[req.params.token]);
- if(!q.rowCount||!q.rows[0].invoice_no)return res.status(404).send('Invoice not yet issued');
- const p=q.rows[0],pdf=new PDFDocument({size:'A4',margin:48});
- res.type('pdf');res.set('Content-Disposition','attachment; filename="'+p.invoice_no+'.pdf"');pdf.pipe(res);
- pdf.fontSize(24).fillColor('#12573d').text('WEBLIFT SA').fontSize(10).fillColor('#526b5a').text('Webliftsa T/A Mr P E Tlatsi').moveDown();
- pdf.fontSize(19).fillColor('#183b2d').text('DEPOSIT INVOICE').moveDown().fontSize(10).text('Invoice: '+p.invoice_no).text('Client: '+p.client_name).text('Company: '+p.company).text('Issued: '+new Date(p.accepted_at).toLocaleDateString('en-ZA')).moveDown();
- pdf.fontSize(12).text('Approved services').moveDown(.5);
- for(const line of p.items){if(!line.selected)continue;if(pdf.y>660)pdf.addPage();pdf.fontSize(9).text(line.label+': '+(line.included?'Included':rand(line.amount_cents)))}
- pdf.moveDown().fontSize(12).text('Total project value: '+rand(p.total_cents)).text('75% deposit payable: '+rand(p.deposit_cents)).text('25% payable on live launch: '+rand(p.balance_cents));
- if(p.monthly_cents)pdf.fontSize(10).text('Agreed separate monthly service: '+rand(p.monthly_cents));
- pdf.moveDown().fontSize(10).text('Bank: African Bank').text('Account: 20160546562').text('Beneficiary: Webliftsa T/A Mr P E Tlatsi').text('Payment reference: '+p.invoice_no);
- pdf.moveDown().fontSize(9).text('VAT not charged (supplier not currently VAT registered). The 25% balance is payable immediately after the website is live and operational under the agreed terms.');
- pdf.end();
+ try{
+  const q=await pool.query(
+   "SELECT p.*, COALESCE((SELECT SUM(amount_cents) FROM wl_payments WHERE proposal_id=p.id),0)::integer AS payments_received_cents FROM wl_proposals p WHERE p.token=$1 AND p.status='accepted'",
+   [req.params.token]);
+  if(!q.rowCount||!q.rows[0].invoice_no)return res.status(404).send('Invoice not yet issued');
+  const p=q.rows[0],paid=Number(p.payments_received_cents),owing=Math.max(0,p.total_cents-paid);
+  const closed=owing===0;
+  const pdf=new PDFDocument({size:'A4',margin:42,autoFirstPage:true,bufferPages:true,info:{Title:'WebLift SA invoice '+p.invoice_no,Author:'WebLift SA',Subject:'Approved website project, deposit, final balance and payments'}});
+  res.type('pdf');res.set('Content-Disposition','attachment; filename="'+p.invoice_no+'.pdf"');
+  pdf.pipe(res);
+  const W=pdf.page.width,M=42,wide=W-M*2;
+  const ink='#153d32',green='#0b664a',gold='#c29a60',muted='#6d8176',soft='#eef5ee',line='#dae4db';
+  const small=(t,x,y,w=240,opt={})=>pdf.font('Helvetica').fontSize(9).fillColor(muted).text(String(t),x,y,{width:w,...opt});
+  const moneyAt=(amount,y,label,highlight=false)=>{
+   if(highlight){pdf.roundedRect(M,y-10,wide,55,11).fill('#ebf5ed')}
+   pdf.font('Helvetica').fontSize(10).fillColor(ink).text(label,M+(highlight?14:0),y+1,{width:270});
+   pdf.font('Helvetica-Bold').fontSize(highlight?19:13).fillColor(highlight?green:ink).text(rand(amount),M+275,y-2,{width:wide-275-(highlight?14:0),align:'right'});
+  };
+  // Brand frame: restrained green, sandstone-gold and South African identity.
+  pdf.rect(0,0,W,15).fill(green);
+  pdf.rect(W-116,0,32,15).fill(gold);
+  pdf.rect(W-84,0,32,15).fill('#d36f47');
+  pdf.rect(W-52,0,52,15).fill('#275d82');
+  pdf.roundedRect(M,38,wide,107,15).fill('#f0f6ef');
+  pdf.roundedRect(M,38,7,107,3).fill(green);
+  let logoOk=false;
+  try{
+   const reqLogo=await fetch('https://weblift-sa.vercel.app/premium-v3/assets/weblift-email-logo.png',{signal:AbortSignal.timeout(4500)});
+   if(reqLogo.ok){
+    const data=Buffer.from(await reqLogo.arrayBuffer());
+    if(data.length<400000){pdf.image(data,M+18,56,{fit:[205,66]});logoOk=true}
+   }
+  }catch{}
+  if(!logoOk)pdf.font('Helvetica-Bold').fontSize(24).fillColor(green).text('WebLift SA',M+18,68);
+  small('WEBSITES THAT MOVE YOUR BUSINESS FORWARD',M+18,124,280);
+  pdf.font('Helvetica-Bold').fontSize(18).fillColor(ink).text('PROJECT INVOICE',M,168);
+  pdf.roundedRect(W-157,164,115,29,10).fill(closed?'#e1f4e8':'#fff1dd');
+  pdf.font('Helvetica-Bold').fontSize(9).fillColor(closed?green:'#946424').text(closed?'PAID IN FULL':'ACCOUNT OPEN',W-149,174,{width:98,align:'center'});
+  pdf.moveTo(M,203).lineTo(W-M,203).strokeColor(line).lineWidth(1).stroke();
+  small('INVOICE NUMBER',M,215);pdf.font('Helvetica-Bold').fontSize(11).fillColor(ink).text(p.invoice_no,M,230);
+  small('ISSUED',M+215,215);pdf.font('Helvetica-Bold').fontSize(10).fillColor(ink).text(new Date(p.accepted_at||p.created_at).toLocaleDateString('en-ZA',{timeZone:'Africa/Johannesburg'}),M+215,230);
+  small('CUSTOMER',M,260);
+  pdf.font('Helvetica-Bold').fontSize(13).fillColor(ink).text(p.company||p.client_name,M,276,{width:320});
+  small(p.client_name,M,293);
+  small('PROJECT',M+340,260,180);
+  pdf.font('Helvetica-Bold').fontSize(11).fillColor(ink).text(p.project_id||'Custom website',M+340,276,{width:wide-340});
+  let y=334;
+  pdf.roundedRect(M,y,wide,29,8).fill('#0c5e45');
+  pdf.font('Helvetica-Bold').fontSize(9).fillColor('#fff').text('AGREED WEBSITE SERVICES',M+13,y+10);
+  pdf.text('AMOUNT',W-M-126,y+10,{width:112,align:'right'});
+  y+=39;
+  const approved=(p.items||[]).filter(x=>x.selected);
+  pdf.font('Helvetica').fontSize(10).fillColor(ink).text('Website package '+p.package_code,M+12,y,{width:310});
+  pdf.font('Helvetica-Bold').text(rand(p.base_cents),W-M-130,y,{width:116,align:'right'});y+=29;
+  pdf.moveTo(M+10,y-5).lineTo(W-M-10,y-5).strokeColor('#e3e9e1').stroke();
+  for(const item of approved){
+   if(y>600){
+    pdf.addPage();
+    y=65;
+    pdf.font('Helvetica-Bold').fontSize(12).fillColor(green).text('WEBLIFT SA — CONTINUED SERVICES',M,y);y+=32;
+   }
+   let label=String(item.label||'Service');
+   if(item.mode==='hourly')label+='  ('+item.hours+' hours)';
+   else if(Number(item.qty)>1)label+='  (x'+item.qty+')';
+   pdf.font('Helvetica').fontSize(9.5).fillColor(ink).text(label,M+12,y,{width:335});
+   pdf.font('Helvetica-Bold').text(item.included?'Included':rand(item.amount_cents),W-M-130,y,{width:116,align:'right'});
+   y=Math.max(pdf.y,y+17)+7;
+   pdf.moveTo(M+10,y-5).lineTo(W-M-10,y-5).strokeColor('#e3e9e1').stroke();
+  }
+  if(y>520){pdf.addPage();y=54}
+  y+=8;
+  pdf.font('Helvetica-Bold').fontSize(12).fillColor(green).text('PAYMENT POSITION',M,y);y+=29;
+  moneyAt(p.total_cents,y,'Agreed project total');y+=31;
+  moneyAt(p.deposit_cents,y,'75% initial deposit due on approval');y+=31;
+  moneyAt(p.balance_cents,y,'25% final balance due immediately upon launch');y+=31;
+  moneyAt(paid,y,'Payments recorded');y+=38;
+  moneyAt(owing,y,'OUTSTANDING ACCOUNT BALANCE',true);y+=69;
+  if(p.monthly_cents){small('Separately agreed monthly service: '+rand(p.monthly_cents)+' / month',M,y,wide);y+=23}
+  if(p.nexora_opt_in){
+   pdf.roundedRect(M,y,wide,41,8).fill('#fff8ec');
+   pdf.font('Helvetica-Bold').fontSize(9).fillColor('#78552d').text('NEXORA ONE / COVENANT RISE — PENDING VERIFICATION',M+12,y+9,{width:wide-25});
+   small('Provisional 10% loyalty purchasing value: '+rand(p.reward_potential_cents)+'. Not deducted from this invoice; no N credits issued.',M+12,y+23,wide-24,{size:8});
+   y+=52;
+  }
+  if(y>685){pdf.addPage();y=55}
+  pdf.roundedRect(M,y,wide,72,9).fill(soft);
+  pdf.font('Helvetica-Bold').fontSize(10).fillColor(ink).text('PAYMENT DETAILS',M+12,y+10);
+  small('African Bank   |   Account 20160546562',M+12,y+27,wide-24);
+  small('Beneficiary: Webliftsa T/A Mr P E Tlatsi   |   Reference: '+p.invoice_no,M+12,y+43,wide-24);
+  y+=87;
+  pdf.font('Helvetica').fontSize(8).fillColor(muted).text(
+   'VAT not charged (supplier not currently VAT registered). The 75% deposit is required on acceptance, and the final 25% is payable immediately after the website is live and operational. This invoice and client account remain OPEN until the entire outstanding balance is received and recorded. Covenant Rise rewards are optional and subject to confirmed Nexora One registration and eligibility; they are not money or an invoice deduction.',
+   M,y,{width:wide,lineGap:3});
+  const pages=pdf.bufferedPageRange();
+  for(let i=0;i<pages.count;i++){
+   pdf.switchToPage(i);
+   const pageH=pdf.page.height;
+   pdf.moveTo(M,pageH-38).lineTo(W-M,pageH-38).strokeColor(line).stroke();
+   pdf.fontSize(8).fillColor(muted).text('WEBLIFT SA  •  PRETORIA, SOUTH AFRICA  •  NEXORA TECHNOLOGIES',M,pageH-30,{width:wide-90});
+   pdf.text((i+1)+' / '+pages.count,W-M-60,pageH-30,{width:60,align:'right'});
+  }
+  pdf.end();
+ }catch(e){
+  if(!res.headersSent)res.status(503).json({error:'Invoice generation is temporarily unavailable.'});
+  else res.end();
+ }
 });
 app.use((req,res)=>res.status(404).json({error:'Endpoint not found'}));
 app.listen(PORT,'0.0.0.0',()=>console.log('WebLift sales API listening on '+PORT));
