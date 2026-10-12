@@ -92,7 +92,7 @@ function renderCard(res,{origin,name,canonical,image}){
  ['name','twitter:card','summary_large_image'],['name','twitter:title',title],
  ['name','twitter:description',description],['name','twitter:image',image]
  ].map(([attr,key,value])=>'<meta '+attr+'="'+esc(key)+'" content="'+esc(value)+'">').join('\n');
- let html=readFileSync('proposal.html','utf8');
+ let html=readFileSync(new URL('./proposal.html',import.meta.url),'utf8');
  html=html.replace(/<title>[^<]*<\/title>/i,'<title>'+esc(title)+'</title>').replace('</head>',meta+'\n</head>');
  res.set('Content-Type','text/html; charset=utf-8');
  res.set('X-Robots-Tag','noindex, nofollow, noarchive');

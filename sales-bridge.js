@@ -1,4 +1,5 @@
-const API='https://weblift-sales-api.onrender.com';
+// First-party API paths allow WebLift to migrate hosts without invalidating old links.
+const API='';
 const $=id=>document.getElementById(id);
 const money=n=>'R'+(Number(n||0)/100).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
 const mapping={'facebook-mgmt':'social-management','printing':'print-design'};
@@ -71,7 +72,7 @@ export async function activateSalesBridge(read){
  async function refresh(){
   if(!read.authorized())return;
   try{
-   const health=await fetch(API+'/health',{cache:'no-store'});
+   const health=await fetch(API+'/api/sales/status',{cache:'no-store'});
    if(!health.ok)throw Error('Database connection pending');
    const result=await request('/api/sales/admin/proposals');
    online=true;state('CONNECTED · LIVE SALES');
