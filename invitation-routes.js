@@ -65,6 +65,7 @@ export function mountInvitations(app,{pool,requireDb,authenticate,writable,origi
   if(!/^\+?\d{9,15}$/.test(mobile))return res.status(400).json({error:'A valid contact/WhatsApp number is required.'});
   if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return res.status(400).json({error:'Email is optional; enter a valid address if supplied.'});
   if(!tone)return res.status(400).json({error:'Choose a message style.'});
+  if(b.outreach_basis_confirmed!==true)return res.status(400).json({error:'Confirm that WebLift has an appropriate reason to contact this person.'});
   const services=Array.isArray(b.services)?[...new Set(b.services.map(x=>trim(x,30)).filter(x=>serviceIds.has(x)))].slice(0,10):[];
   if(!services.length)return res.status(400).json({error:'Choose at least one relevant WebLift service.'});
   const note=trim(b.personal_message,750),project=validProjectUrl(b.project_url);
@@ -72,8 +73,8 @@ export function mountInvitations(app,{pool,requireDb,authenticate,writable,origi
   const token=randomBytes(32).toString('base64url');
   try{
    const q=await pool.query(
-    "INSERT INTO wl_invitations(token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,created_by) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10) RETURNING id,token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,status,views,created_at",
-    [token,recipient,business,mobile,email,tone,JSON.stringify(services),note,project,req.administrator.actor]);
+    "INSERT INTO wl_invitations(token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,created_by,outreach_basis_confirmed) VALUES($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11) RETURNING id,token,recipient_name,business_name,phone,email,tone,selected_services,personal_message,project_url,status,views,created_at",
+    [token,recipient,business,mobile,email,tone,JSON.stringify(services),note,project,req.administrator.actor,true]);
    res.status(201).json({invitation:{...q.rows[0],share_url:origin+'/invite?token='+encodeURIComponent(token)+'&v=1'}});
   }catch{return unavailable(res)}
  });
