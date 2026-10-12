@@ -1,72 +1,103 @@
 const API='https://weblift-sales-api.onrender.com';
 const $=id=>document.getElementById(id);
-const money=n=>'R'+(Number(n||0)/100).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money=cents=>'R'+(Number(cents||0)/100).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
 const token=new URLSearchParams(location.search).get('token')||'';
 let proposal=null,working=false;
 const url=API+'/api/sales/proposal/'+encodeURIComponent(token);
 const error=msg=>{$('message').className='banner error';$('message').textContent=msg};
-function setBusy(yes){working=yes;for(const id of ['save','approve','decline'])$(id).disabled=yes}
+function setBusy(on){working=on;for(const id of ['save','approve','decline'])$(id).disabled=on}
+function getSelected(){return proposal.items.filter(x=>x.selected||x.mandatory).map(x=>x.id)}
+function amount(item){const units=item.mode==='hourly'?Number(item.hours)||0:Number(item.qty)||1;return Math.round((Number(item.price_cents)||0)*units)}
 function calculate(){
  if(!proposal)return;
- const sum=proposal.base_cents+proposal.items.reduce((s,x)=>s+(x.selected&&!x.included?x.amount_cents:0),0);
- const deposit=Math.round(sum*.75);
- $('total').textContent=money(sum);$('deposit').textContent=money(deposit);$('balance').textContent=money(sum-deposit);
+ let total=Number(proposal.base_cents)||0;
+ for(const x of proposal.items){x.amount_cents=x.selected&&!x.included?amount(x):0;total+=x.amount_cents}
+ const deposit=Math.round(total*.75),balance=total-deposit,paid=Number(proposal.paid_cents)||0;
+ const reward=Math.round(total*.10);
+ $('total').textContent=money(total);$('deposit').textContent=money(deposit);$('balance').textContent=money(balance);
+ $('paid').textContent=money(paid);$('outstanding').textContent=money(Math.max(0,total-paid));
+ $('books-status').textContent=proposal.invoice_no&&paid>=total?'PAID IN FULL':'OPEN';
+ $('reward-value').textContent=money(reward);
+ $('reward-n').textContent=(reward/10000).toLocaleString('en-ZA',{maximumFractionDigits:4})+' N';
+ for(const row of document.querySelectorAll('.row-item')){
+  const x=proposal.items.find(i=>i.id===row.dataset.id);
+  if(x){const n=row.querySelector('.price');if(n)n.textContent=x.included?'Included':x.selected?money(x.amount_cents):'Not selected'}
+ }
+}
+function showPreview(projectUrl){
+ const frame=$('website-preview'),link=$('project-url'),address=$('preview-address');
+ let safe;try{safe=new URL(projectUrl)}catch{}
+ if(!safe||!['https:','http:'].includes(safe.protocol)){
+  frame.src='about:blank';frame.srcdoc='<p style="font:16px system-ui;text-align:center;padding:80px 30px;color:#526b5d">Your project website preview has not been published yet. Ask WebLift for its latest preview.</p>';
+  link.hidden=true;address.textContent='Preview pending';$('preview-status').textContent='Awaiting the published website URL';return;
+ }
+ link.hidden=false;link.href=safe.href;address.textContent=safe.hostname+safe.pathname;
+ frame.removeAttribute('srcdoc');frame.src=safe.href;
+ $('preview-status').textContent='Live website preview • If the site blocks embedding, tap Open full website ↗';
 }
 function render(){
- const p=proposal;const final=p.status==='accepted'||p.status==='declined';
- $('company').textContent=p.company||p.client_name;
- $('client-title').textContent='A personalised WebLift website presentation prepared for '+(p.company||p.client_name)+'.';
- $('proposal-status').textContent=p.status.toUpperCase()+(final?'':' · AWAITING YOUR DECISION');
- $('proposal-created').textContent=new Date(p.created_at).toLocaleDateString('en-ZA');
- $('project-name').textContent=p.project_id||'Your new business website';
- const a=$('project-url');let safe;
- try{safe=new URL(p.project_url)}catch{}
- if(safe&&safe.protocol==='https:'){a.href=safe.href;a.style.display=''}else{a.removeAttribute('href');a.style.display='none'}
- $('custom-note').textContent=p.notes||'Please contact your WebLift project representative if you have questions about the project scope.';
+ const p=proposal,final=['accepted','declined'].includes(p.status);
+ $('app').hidden=false;$('loading').hidden=true;
+ $('company').textContent=p.company||p.client_name||'Your website';
+ $('client-title').textContent='A personalised website design and business-growth presentation for '+(p.company||p.client_name)+'.';
+ $('proposal-status').textContent=p.status==='accepted'?'APPROVED':p.status==='declined'?'DECLINED':p.status==='modified'?'UPDATED · AWAITING YOUR DECISION':'PENDING YOUR REVIEW';
+ $('proposal-created').textContent=new Date(p.created_at).toLocaleDateString('en-ZA',{dateStyle:'medium'});
+ showPreview(p.project_url);
+ $('custom-note').textContent=p.notes||'Your detailed project scope will be finalised with WebLift SA.';
  const list=$('service-list');list.replaceChildren();
- for(const item of p.items){
-  const row=document.createElement('label');row.className='item';
-  const box=document.createElement('input');box.type='checkbox';box.checked=!!item.selected;box.disabled=!!item.mandatory||final;box.dataset.service=item.id;box.addEventListener('change',()=>{item.selected=box.checked;item.amount_cents=(item.selected&&!item.included)?Math.round(item.price_cents*(item.mode==='hourly'?item.hours:item.qty)):0;calculate();$('message').textContent='Selections updated locally. Choose Save or Accept to send your decision to WebLift.';$('message').className='banner'});
-  const detail=document.createElement('span'),name=document.createElement('b'),info=document.createElement('small');
-  name.textContent=item.label;
-  info.textContent=item.mandatory?'Included in selected package':item.mode==='hourly'?String(item.hours)+' hours of specialist work':'Optional service'+(item.qty>1?' · quantity '+item.qty:'');
-  detail.append(name,info);
-  const amount=document.createElement('strong');amount.textContent=item.included?'Included':money(item.selected?item.amount_cents:(item.price_cents*(item.mode==='hourly'?item.hours:item.qty)));
-  box.addEventListener('change',()=>{amount.textContent=item.selected?money(item.amount_cents):'Not selected'});
-  row.append(box,detail,amount);list.append(row);
+ for(const x of p.items){
+  const row=document.createElement('label');row.className='row-item';row.dataset.id=x.id;row.setAttribute('aria-disabled',String(final));
+  const check=document.createElement('input');check.type='checkbox';check.checked=!!x.selected;check.disabled=!!x.mandatory||final;
+  check.addEventListener('change',()=>{x.selected=check.checked;calculate();$('message').className='banner';$('message').textContent='Selections updated. Use Save selected services to send them to WebLift, or approve the quotation.'});
+  const text=document.createElement('span'),title=document.createElement('strong'),details=document.createElement('small');
+  title.textContent=x.label;
+  details.textContent=x.mandatory?'Included in the website package':x.mode==='hourly'?x.hours+' labour hours':Number(x.qty)>1?'Quantity '+x.qty:'Optional service';
+  text.append(title,details);
+  const price=document.createElement('strong');price.className='price';
+  row.append(check,text,price);list.append(row);
  }
- $('monthly').textContent=p.monthly_cents?'Separate ongoing services: '+money(p.monthly_cents)+' per month, subject to the accepted package.':'No separately priced monthly package is included.';
- $('actions').classList.toggle('hide',final);
- $('issued').classList.toggle('hide',p.status!=='accepted');
- if(p.status==='accepted'){
-  $('pdf').href=url+'/invoice.pdf';
-  $('message').textContent='Your acceptance has been recorded. The agreed services and invoice are locked.';$('message').className='banner done';
- }else if(p.status==='declined'){$('message').textContent='Your decision has been recorded and WebLift has been notified in the sales ledger.';$('message').className='banner';}
+ $('monthly').textContent=p.monthly_cents?money(p.monthly_cents)+' / month':'None';
+ $('nexora-opt-in').checked=!!p.nexora_opt_in;
+ $('nexora-opt-in').disabled=final;
+ $('actions').hidden=final;$('issued').hidden=p.status!=='accepted';
+ $('quote-pdf').href=url+'/quote.pdf';
+ if(p.status==='accepted'){$('pdf').href=url+'/invoice.pdf';$('message').className='banner';$('message').textContent='Approved. Your invoice is available. WebLift will record payments separately until your account is settled.'}
+ if(p.status==='declined'){$('message').className='banner';$('message').textContent='Your decision is recorded in WebLift’s sales ledger.'}
  calculate();
 }
 async function load(){
- if(!/^[A-Za-z0-9_-]{40,90}$/.test(token))throw Error('This private link is incomplete or invalid.');
+ if(!/^[A-Za-z0-9_-]{40,90}$/.test(token))throw Error('The private presentation link is incomplete or invalid.');
  const r=await fetch(url,{cache:'no-store'});
- const data=await r.json().catch(()=>({}));
- if(!r.ok)throw Error(data.error||'The proposal could not be opened.');
- proposal=data.proposal;$('loading').classList.add('hide');$('app').classList.remove('hide');render();
+ const body=await r.json().catch(()=>({}));
+ if(!r.ok)throw Error(body.error||'Unable to load the presentation.');
+ proposal=body.proposal;render();
 }
 async function decide(action){
  if(working||!proposal)return;
- if(action==='accept'&&!confirm('Accept this WebLift quotation, lock the selected services and generate the 75% deposit invoice?'))return;
+ if(action==='accept'&&!$('accept-terms').checked){error('Please tick the agreement to the quoted services and payment terms before accepting.');return}
+ if(action==='accept'&&!confirm('Accept your selected services and request the 75% deposit invoice? The agreed terms are binding once accepted.'))return;
  let reason='';
- if(action==='decline'){reason=prompt('Optional: tell WebLift why you are declining the proposal.','');if(reason===null)return}
- setBusy(true);$('message').textContent='Recording your decision securely…';$('message').className='banner';
+ if(action==='decline'){reason=prompt('Optional: tell WebLift why you are declining this quotation.','');if(reason===null)return}
+ setBusy(true);$('message').className='banner';$('message').textContent='Saving your choice securely…';
  try{
-  const response=await fetch(url+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,version:proposal.version,selected_ids:proposal.items.filter(i=>i.selected||i.mandatory).map(i=>i.id),reason})});
-  const result=await response.json().catch(()=>({}));
-  if(!response.ok)throw Error(result.error||'Your decision could not be saved.');
+  const response=await fetch(url+'/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+   action,version:proposal.version,selected_ids:getSelected(),reason,
+   accepted_terms:action==='accept'&&$('accept-terms').checked,
+   nexora_opt_in:$('nexora-opt-in').checked
+  })});
+  const body=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(body.error||'We could not save your choice.');
   await load();
-  if(action==='accept')$('message').textContent='Approved. Your invoice was issued and added to WebLift’s records. Select Download invoice PDF.';
- }catch(e){error(e.message||'Something went wrong. Please try again.')}
+  if(action==='accept'){$('message').className='banner';$('message').textContent='Thank you. Your deposit invoice is ready below. Covenant Rise reward eligibility, if requested, remains pending verification.'}
+ }catch(e){error(e.message||'Please try again.')}
  finally{setBusy(false)}
 }
 $('save').addEventListener('click',()=>decide('revise'));
 $('approve').addEventListener('click',()=>decide('accept'));
 $('decline').addEventListener('click',()=>decide('decline'));
-load().catch(e=>{$('loading').innerHTML='';const h=document.createElement('h2');h.textContent='Proposal unavailable';const p=document.createElement('p');p.textContent=e.message||'The client portal is temporarily unavailable. Please contact WebLift SA.';$('loading').append(h,p)});
+$('nexora-opt-in').addEventListener('change',()=>{
+ if(!proposal)return;
+ $('message').className='status-msg';
+ $('message').textContent='Your Nexora One reward preference will be saved with your proposal decision. It does not reduce the amount payable.';
+});
+load().catch(e=>{const root=$('loading');root.replaceChildren();const h=document.createElement('h2'),p=document.createElement('p');h.textContent='Proposal unavailable';p.textContent=e.message+' Please contact WebLift SA for a valid private presentation.';root.append(h,p)});
