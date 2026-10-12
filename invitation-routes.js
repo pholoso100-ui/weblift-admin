@@ -22,7 +22,7 @@ let heroCache=null;
 async function coverImage(origin){
  if(heroCache&&Date.now()-heroCache.time<3600000)return heroCache.data;
  const sources=[
-  'https://images.pexels.com/photos/10375897/pexels-photo-10375897.jpeg?auto=compress&cs=tinysrgb&w=1600',
+  'https://images.pexels.com/photos/3862094/pexels-photo-3862094.jpeg?auto=compress&cs=tinysrgb&w=1600',
   origin+'/premium-v3/assets/hero-nexora-v3.webp'
  ];
  let buffer;
