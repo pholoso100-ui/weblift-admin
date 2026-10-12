@@ -41,6 +41,10 @@ app.use((req,res,next)=>{
  if(origin===ORIGIN){res.set('Access-Control-Allow-Origin',ORIGIN);res.set('Access-Control-Allow-Headers','Content-Type,Authorization');res.set('Access-Control-Allow-Methods','GET,POST,PATCH,OPTIONS')}
  if(req.method==='OPTIONS')return res.sendStatus(origin===ORIGIN?204:403);next();
 });
+app.get('/api/sales/status', (req,res)=>{
+ const category=!pool?'DATABASE_URL_NOT_SET':ready?'READY':/authentication failed|password authentication/i.test(problem)?'CREDENTIALS_REJECTED':/ENOTFOUND|EAI_AGAIN|DNS/i.test(problem)?'DATABASE_HOST_NOT_FOUND':/ECONNREFUSED|timeout|connect/i.test(problem)?'DATABASE_UNREACHABLE':'DATABASE_INITIALIZATION_FAILED';
+ res.json({service:'WebLift Sales',database:category,ready});
+});
 app.get('/health',async(req,res)=>{if(!ready)await initialise();res.status(ready?200:503).json({ok:ready,service:'WebLift Sales API',database:ready?'available':'unconfigured',detail:ready?undefined:problem,free_database_expiry:'2026-11-11'})});
 function requireDb(req,res,next){if(!ready)return res.status(503).json({error:'The sales database is not connected. Nothing has been saved or invoiced.'});next()}
 async function authenticate(req,res,next){
