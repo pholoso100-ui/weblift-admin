@@ -145,7 +145,7 @@ export function mountInvitations(app,{pool,requireDb,authenticate,writable,origi
    ['name','twitter:card','summary_large_image'],['name','twitter:title',title],
    ['name','twitter:description',description],['name','twitter:image',image]
   ].map(([a,k,v])=>'<meta '+a+'="'+esc(k)+'" content="'+esc(v)+'">').join('\n');
-  let html=readFileSync('invitation.html','utf8');
+  let html=readFileSync(new URL('./invitation.html',import.meta.url),'utf8');
   html=html.replace(/<title>[^<]*<\/title>/i,'<title>'+esc(title)+'</title>').replace('</head>',data+'\n</head>');
   res.set('Content-Type','text/html; charset=utf-8').set('X-Robots-Tag','noindex,nofollow,noarchive');
   return res.status(200).send(html);
