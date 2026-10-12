@@ -107,3 +107,20 @@ main{padding:12px 10px 45px}
   .quote-summary .fine{font-size:10px!important;color:#607064!important}
   .quote-summary:before{display:none!important;content:none!important}
 }
+
+/* Banking details displayed in the WebLift admin quotation draft and its A4 print version. */
+.admin-bank-details{margin:18px 0 18px;padding:16px;border:1px solid #6c9b7857;border-left:4px solid #c59e61;border-radius:13px;background:linear-gradient(110deg,#f3faed14,#eccb8f18)}
+.admin-bank-header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#f0dfb7;font-size:10px;letter-spacing:.10em;font-weight:900;margin-bottom:10px}
+.admin-bank-header span{color:#cae7c7}
+.admin-bank-line{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #dce6d229;padding:9px 0;font-size:12px}
+.admin-bank-line span{color:#c2d2bf}
+.admin-bank-line strong{color:#fff;font-size:12px;text-align:right;overflow-wrap:anywhere}
+.admin-bank-details p{font-size:11px;line-height:1.6;color:#c0d4bf;margin:12px 0 0}
+@media print{
+ .admin-bank-details{display:block!important;background:#f1f7ee!important;border:1px solid #ccdccc!important;border-left:5px solid #116548!important;margin:20px 0!important;padding:17px!important;break-inside:avoid!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .admin-bank-header,.admin-bank-header span{color:#155b42!important}
+ .admin-bank-line{border-color:#d4e0d2!important}
+ .admin-bank-line span{color:#4d6b59!important}
+ .admin-bank-line strong{color:#163f31!important}
+ .admin-bank-details p{color:#546b5b!important}
+}
