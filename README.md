@@ -21,12 +21,12 @@ No passwords, API keys, bank account numbers or private customer records are sto
 Render static site. Build command: `echo WebLift administration is ready`
 Publish directory: `.`
 
-## WhatsApp / social media proposal previews
+## WhatsApp / social media proposal previews (v5)
 
-- **New private client links:** `https://weblift-sa.vercel.app/share?token=…`
-- Vercel rewrites `/share` to the Render Sales API `GET /share`, which reads only the matching project's **public site name and URL** from the proposals database.
-- The endpoint serves the **actual responsive client proposal HTML** with server-rendered `og:title`, `og:description`, `og:image`, `og:url` and Twitter card metadata. Social crawlers do not execute JavaScript, so do not move these tags into a browser script.
-- `og:image` requests a 1200×630 preview of the **public project website** from Thum.io. It never includes the private proposal token or quote values. For unpublished/non-public URLs, a WebLift/Nexora branded image is used instead.
-- Old `/proposal?token=…` links continue to open the proposal UI, but do not have project-specific social metadata.
-- **Verification without customer data:** `https://weblift-sa.vercel.app/share-preview-demo` returns a public PRISCA social-preview test card. The demo is for metadata testing; it is not a valid quotation.
-- WhatsApp caches link previews. Test a newly generated `/share` link and keep WhatsApp's link-preview option enabled. Screenshot service quotas/availability apply; do not promise instant captures for password-protected/unpublished websites.
+- **Private links:** `https://weblift-sa.vercel.app/share?token=…&pv=5`. The v5 query parameter avoids reuse of broken, cached WhatsApp previews. Legacy client links continue to open their quotations.
+- The Sales API serves `/share` with project-specific server-rendered `og:title`, `og:description`, `og:url`, and `og:image`. Client prices and contact details are not in preview metadata.
+- The OG image URL is on the **WebLift domain**, `/share-image/:token.jpg?pv=5`; Vercel rewrites to Render. It is a real static JPEG generated using Sharp, 1200×630, with a browser-style presentation, project imagery, and WebLift branding.
+- Website screenshot streaming was removed. **Never use Thum.io's streamed animated loading GIF in Open Graph image metadata.** Preview art is taken from WebLift's **published portfolio images** (representative website imagery, not a literal screenshot). If an asset fails, the API uses its first-party Nexora brand hero and finally an inline neutral vector fallback.
+- Demo: `https://weblift-sa.vercel.app/share-preview-demo?pv=5`. Its OG image `/share-image-demo.jpg?pv=5` was visually checked and showed NDO architecture imagery with neither loading spinner nor blank panel.
+- **Clients see the actual interactive website in the presentation iframe** after opening the link; sites may block iframe embedding, so keep the Open full website action.
+- WhatsApp caches URLs: share the **new** v5 link in a **new** message rather than expecting old chat cards to change.
