@@ -25,7 +25,9 @@ function calculate(){
  }
 }
 function showPreview(projectUrl){
- const frame=$('website-preview'),link=$('project-url'),address=$('preview-address');
+ const frame=$('website-preview'),link=$('project-url'),address=$('preview-address'),toggle=$('preview-toggle'),visual=$('project-visual'),img=$('project-visual-image');
+ const match=(window.WebLiftProjects||[]).find(p=>p.url&&p.url.replace(/\/$/,'')===String(projectUrl||'').replace(/\/$/,''));
+ if(match?.image&&match.image.startsWith('/premium-v3/assets/')){img.src=match.image;toggle.hidden=false;toggle.textContent='Show project imagery';toggle.onclick=()=>{const show=visual.hidden;visual.hidden=!show;frame.hidden=show;toggle.textContent=show?'Show live site preview':'Show project imagery'}}else{toggle.hidden=true;visual.hidden=true;frame.hidden=false}
  let safe;try{safe=new URL(projectUrl)}catch{}
  if(!safe||!['https:','http:'].includes(safe.protocol)){
   frame.src='about:blank';frame.srcdoc='<p style="font:16px system-ui;text-align:center;padding:80px 30px;color:#526b5d">Your project website preview has not been published yet. Ask WebLift for its latest preview.</p>';
