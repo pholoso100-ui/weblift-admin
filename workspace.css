@@ -49,3 +49,25 @@ main{padding:12px 10px 45px}
 .page-pane{border-radius:13px}
 .page-pane iframe{height:calc(100dvh - 175px);min-height:450px}
 }
+
+/* Sales & quotation: mobile legibility improvements */
+.live-sales-panel{padding:19px 0 0;border-top:1px solid rgba(235,239,224,.18);margin-top:22px;min-width:0}
+.live-panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.live-panel-heading>b{display:block;flex:1 1 180px;font-size:12px;line-height:1.5;letter-spacing:.065em;color:#ebf5ed;overflow-wrap:anywhere}
+#sales-ledger-status{display:inline-flex;flex:0 1 auto;align-items:center;max-width:100%;min-height:28px;border:1px solid #42644e;border-radius:999px;padding:5px 9px;font-weight:800;letter-spacing:.035em;font-size:10px;line-height:1.35;text-wrap:wrap;overflow-wrap:anywhere;color:#eccb8e}
+.ledger-records{font-size:12px;line-height:1.55;color:#bdd2c0;overflow-wrap:anywhere}
+.sales-record{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:11px 0;border-top:1px solid rgba(255,255,255,.12)}
+.sales-record b,.sales-record small{display:block;overflow-wrap:anywhere}
+.sales-record small{color:#afc8b6;font-size:11px;margin-top:4px}
+.sales-record a{color:#e3c78e;white-space:nowrap;font-weight:800}
+.client-share{display:grid;gap:10px;padding:11px;border:1px solid #4b6a58;border-radius:12px;margin-top:11px;min-width:0}
+.client-share label{display:grid;gap:5px;font-size:12px;color:#c3dece}
+.client-share input{width:100%;min-width:0;padding:10px;border:1px solid #4b7d61;background:#0b281e;color:#f3fff4;border-radius:8px}
+.client-share a{color:#edcf9e}
+#publish-proposal:disabled{background:#25553f;opacity:.58;cursor:not-allowed}
+@media(max-width:620px){
+.live-sales-panel{margin-top:19px}
+.live-panel-heading{gap:8px}
+.live-panel-heading>b{font-size:12px;flex-basis:100%}
+#sales-ledger-status{font-size:10px}
+}
