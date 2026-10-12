@@ -45,6 +45,19 @@ app.get('/api/sales/status', (req,res)=>{
  const category=!pool?'DATABASE_URL_NOT_SET':ready?'READY':/authentication failed|password authentication/i.test(problem)?'CREDENTIALS_REJECTED':/ENOTFOUND|EAI_AGAIN|DNS/i.test(problem)?'DATABASE_HOST_NOT_FOUND':/ECONNREFUSED|timeout|connect/i.test(problem)?'DATABASE_UNREACHABLE':'DATABASE_INITIALIZATION_FAILED';
  res.json({service:'WebLift Sales',database:category,ready});
 });
+app.get('/api/sales/upstream-check',async(req,res)=>{
+ const statuses={};
+ for(const [name,headers] of [
+  ['direct',{'Content-Type':'application/json'}],
+  ['origin',{'Content-Type':'application/json','Origin':ORIGIN,'Referer':ORIGIN+'/admin.html'}]
+ ]){
+  try{
+   const r=await fetch(ORIGIN+'/api/manage',{method:'POST',headers,body:JSON.stringify({action:'profile'}),signal:AbortSignal.timeout(5000)});
+   statuses[name]={status:r.status,kind:(r.headers.get('content-type')||'').split(';')[0]};
+  }catch(e){statuses[name]={network:'unavailable'}}
+ }
+ res.json({upstream:statuses});
+});
 app.get('/health',async(req,res)=>{if(!ready)await initialise();res.status(ready?200:503).json({ok:ready,service:'WebLift Sales API',database:ready?'available':'unconfigured',detail:ready?undefined:problem,free_database_expiry:'2026-11-11'})});
 function requireDb(req,res,next){if(!ready)return res.status(503).json({error:'The sales database is not connected. Nothing has been saved or invoiced.'});next()}
 async function authenticate(req,res,next){
