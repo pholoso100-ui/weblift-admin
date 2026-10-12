@@ -1,6 +1,7 @@
 const API='https://weblift-sales-api.onrender.com';
 const $=id=>document.getElementById(id);
 let started=false,busy=false,active=false,authorized=()=>false,notice=()=>{};
+let activityTimer=null;
 const iconStatus={created:'READY TO SHARE',viewed:'OPENED',interested:'INTERESTED',not_now:'NOT RIGHT NOW',revoked:'REVOKED'};
 const money=x=>'R'+Number(x||0).toLocaleString('en-ZA');
 async function authRequest(path,opts={}){
@@ -126,9 +127,15 @@ async function createInvitation(e){
  }catch(e){feedback(e.message||'Could not create invitation.',true)}
  finally{busy=false;btn.disabled=false;btn.textContent='Create personalised invitation ↗'}
 }
+function startActivityPolling(){
+ if(activityTimer!==null)window.clearInterval(activityTimer);
+ activityTimer=window.setInterval(()=>{
+  if(active&&authorized()&&!document.hidden)void refreshInvitations();
+ },30000);
+}
 export function activateInvitationAdmin({canWrite,notify}){
  authorized=canWrite;notice=notify||(()=>{});active=true;
- if(started){void refreshInvitations();return}
+ if(started){startActivityPolling();void refreshInvitations();return}
  started=true;
  $('inv-create-form').addEventListener('submit',createInvitation);
  $('inv-business').addEventListener('input',previewText);
@@ -137,6 +144,6 @@ export function activateInvitationAdmin({canWrite,notify}){
   if($('inv-project-select').value)$('inv-project-url').value='';
  });
  $('inv-refresh').addEventListener('click',()=>refreshInvitations());
- loadPortfolio();previewText();void refreshInvitations();
+ loadPortfolio();previewText();startActivityPolling();void refreshInvitations();
 }
-export function pauseInvitations(){active=false}
+export function pauseInvitations(){active=false;if(activityTimer!==null){window.clearInterval(activityTimer);activityTimer=null}}
