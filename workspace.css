@@ -124,3 +124,34 @@ main{padding:12px 10px 45px}
  .admin-bank-line strong{color:#163f31!important}
  .admin-bank-details p{color:#546b5b!important}
 }
+
+/* WebLift Invitation Studio: visually distinct, still within one protected admin menu */
+.invite-admin{border-radius:19px;padding:clamp(14px,3vw,29px)!important;background:linear-gradient(138deg,#f2f7f0,#fffdfa 65%,#f1f4eb)!important;min-width:0}
+.invite-admin-intro{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:0 0 20px;color:#194833}
+.invite-admin-intro h2{font-size:clamp(25px,3vw,37px);letter-spacing:-.045em;margin:6px 0 8px;color:#173f30}
+.invite-admin-intro p{font-size:13px;color:#677c6b;line-height:1.6;max-width:650px}
+.invite-admin-intro .gold{color:#bc9155}.invite-chip{font-size:10px;color:#1f674a;border:1px solid #c7dfc9;border-radius:99px;padding:11px 13px;background:#eef7ed;font-weight:750;letter-spacing:.05em}
+.invite-admin-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,.9fr);gap:19px;align-items:start}
+.invite-admin-form{display:grid;gap:14px;min-width:0}.invite-admin-form form{display:grid;gap:15px}
+.invite-panel{background:rgba(255,255,253,.95);border:1px solid #d9e5d7;box-shadow:0 10px 27px #1b5c3410;border-radius:19px;padding:clamp(16px,2.5vw,24px);color:#1b4937;min-width:0}
+.invite-panel h3{font-size:19px;letter-spacing:-.035em;margin:0 0 8px;color:#1a4c38}.invite-panel p{font-size:12px;color:#657b6b;line-height:1.65}
+.invite-panel .section-top{display:flex;gap:12px;margin-bottom:17px;align-items:flex-start}
+.invite-panel .section-top h3{margin:0 0 5px}
+.invite-panel .section-top p{margin:0}
+.invite-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.invite-fields label,.invite-note{display:grid;gap:7px;color:#3c6550;font-size:12px;font-weight:760;margin-bottom:12px}
+.invite-fields input,.invite-note input,.invite-note select,.invite-note textarea,#inv-share-url{width:100%;min-width:0;background:#f7fbf7;color:#17412f;border:1px solid #cfded1;border-radius:11px;padding:12px 13px;font-size:14px;outline:none}
+.invite-fields input:focus,.invite-note input:focus,.invite-note textarea:focus,.invite-note select:focus{border-color:#39946c;box-shadow:0 0 0 3px #77b79a30}
+.invite-admin .req{color:#c1744c}.invite-admin .optional{color:#8b997f;font-size:10px;font-weight:500}
+.invite-modes{display:grid;gap:10px}.invite-mode{display:flex;align-items:flex-start;gap:12px;border:1px solid #d7e5d8;border-radius:14px;padding:15px;background:#fbfefa;cursor:pointer}.invite-mode:has(input:checked){border-color:#8eba99;box-shadow:0 0 0 2px #9acaa23b;background:#eef8ed}.invite-mode input{accent-color:#106743;width:17px;height:17px;flex-shrink:0;margin-top:3px}.invite-mode strong{display:block;font-size:14px;color:#1f563d;margin-bottom:6px}.invite-mode small{display:block;font-size:11px;line-height:1.6;color:#657d6c}
+.invite-services{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 18px}.invite-services label{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;background:#f2f8f0;border:1px solid #d9e8d5;border-radius:10px;padding:10px;color:#275d43;cursor:pointer}.invite-services input,.invite-confirm input{accent-color:#126949;width:17px;height:17px;flex:0 0 17px}
+.invite-admin .invite-help{font-size:11px;color:#789080;line-height:1.55}
+.invite-confirm label{display:flex;gap:11px;align-items:flex-start;color:#355943;font-weight:600;font-size:12px;line-height:1.7;margin-bottom:16px}
+.invite-confirm input{margin-top:4px}.inv-feedback{font-size:12px;min-height:18px;color:#1b704c;line-height:1.6;margin-top:11px}
+.invite-admin-side{display:grid;gap:16px;min-width:0}.invite-preview{background:linear-gradient(155deg,#fefefa,#eff8ed)}.invite-preview .eyebrow{color:#aa7a42}.invite-mini{background:linear-gradient(124deg,#f2f8ecb9,#f4e7cbb9),url('/premium-v3/assets/hero-nexora-v3.webp') center/cover;border-radius:15px;padding:22px;min-height:190px;border:1px solid #d9e3d4;margin:17px 0}.invite-mini span{font-size:10px;font-weight:850;letter-spacing:.1em;color:#558469}.invite-mini strong{font-size:clamp(24px,3vw,35px);letter-spacing:-.045em;color:#194332;display:block;line-height:1.15;margin:19px 0 10px}.invite-mini p{font-size:12px;color:#557362;font-weight:600}.invite-mini div{font-size:9px;font-weight:800;color:#a5763b;margin-top:18px;letter-spacing:.06em}
+.invite-preview>.secondary-action{border-radius:11px;padding:12px}
+.invite-activity-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.invite-activity-head h3{margin:6px 0 0}.invite-activity-head .secondary-action{padding:9px 12px;font-size:12px}
+.inv-share-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.inv-share-buttons>*{padding:10px 12px;border-radius:10px;font-size:12px;text-decoration:none;display:inline-flex;align-items:center}
+.invite-admin-side small{color:#72887a;line-height:1.5;font-size:11px}
+.inv-history{display:grid;gap:9px}.inv-record{border:1px solid #dfe9dd;border-radius:12px;background:#fbfefa;padding:13px;display:grid;gap:7px}.inv-record-top{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap;align-items:flex-start}.inv-record b{font-size:13px;color:#20543c}.inv-record small{display:block;font-size:11px;color:#7c8c81;line-height:1.5}.inv-record-status{font-size:10px;color:#206847;background:#e5f2e3;padding:5px 8px;border-radius:50px;font-weight:850;white-space:nowrap}.inv-record-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px}.inv-record-actions a,.inv-record-actions button{border:1px solid #cbdccf;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:750;color:#136442;text-decoration:none;background:#fff;cursor:pointer}.inv-record-actions .revoker{color:#a45241;border-color:#edd8d1}.inv-record-actions .revoker:disabled{opacity:.4}
+@media(max-width:850px){.invite-admin-grid{grid-template-columns:1fr}.invite-admin-side{grid-template-columns:1fr 1fr;align-items:start}.invite-admin-side .invite-panel:last-child{grid-column:1/-1}}
+@media(max-width:610px){.invite-admin{padding:11px!important}.invite-admin-grid,.invite-admin-side{grid-template-columns:1fr}.invite-admin-side .invite-panel:last-child{grid-column:auto}.invite-fields,.invite-services{grid-template-columns:1fr}.invite-panel{border-radius:14px;padding:17px}.invite-chip{font-size:9px}.invite-admin-intro h2{font-size:26px}.inv-share-buttons>*{flex:1 1 42%;justify-content:center}}
