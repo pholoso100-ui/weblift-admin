@@ -1,0 +1,29 @@
+/* WebLift SA mobile navigation hotfix — retains original production styling and prices. */
+@import url("https://weblift-64oaqwzs5-quantifier-pro.vercel.app/premium-v3/site-wide.css");
+@media(max-width:720px){
+ html{scroll-padding-top:84px!important}
+ .wl-unified{padding-bottom:85px!important}
+ .wl-shell-header,.header{position:sticky!important;top:0!important;z-index:95!important;background:rgba(245,250,243,.77)!important;-webkit-backdrop-filter:blur(18px) saturate(155%)!important;backdrop-filter:blur(18px) saturate(155%)!important;border-bottom:1px solid rgba(255,255,255,.65)!important;box-shadow:0 5px 20px rgba(16,55,36,.07)!important}
+ .wl-shell-inner{width:calc(100% - 28px)!important;min-height:0!important;padding:7px 0 8px!important;grid-template-columns:minmax(0,1fr) 42px!important;grid-template-areas:"brand toggle" "actions actions"!important;gap:5px 10px!important}
+ .wl-shell-brand img{width:150px!important;max-width:100%!important}
+ .wl-shell-toggle{width:40px!important;height:40px!important;min-height:40px!important;border-radius:11px!important}
+ .wl-shell-actions{gap:10px!important;justify-content:space-between!important;align-items:center!important;margin:0!important;min-height:35px!important}
+ .wl-shell-account{font-size:12px!important;line-height:1.1!important}
+ .wl-shell-cta{font-size:12px!important;min-height:36px!important;padding:8px 12px!important;gap:9px!important;border-radius:11px!important}
+ .header .header-inner{min-height:0!important;height:auto!important;padding:7px 0!important;grid-template-rows:auto auto!important;gap:5px!important}
+ .header .brand img{width:150px!important}
+ .header .header-actions .button{min-height:36px!important;padding:8px 12px!important;font-size:12px!important}
+ .wl-page-dock,.chapter-dock{width:calc(100% - 20px)!important;max-width:calc(100% - 20px)!important;bottom:max(8px,env(safe-area-inset-bottom))!important;padding:5px!important;gap:0!important;min-height:50px!important;border-radius:16px!important;background:rgba(245,250,241,.78)!important;border:1px solid rgba(255,255,255,.75)!important;box-shadow:0 10px 26px rgba(15,55,36,.16)!important;-webkit-backdrop-filter:blur(23px) saturate(165%)!important;backdrop-filter:blur(23px) saturate(165%)!important}
+ .wl-page-dock .wl-dock-links,.chapter-dock .dock-links{display:flex!important;grid-template-columns:none!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none!important;width:100%!important;min-width:0!important;gap:3px!important;overscroll-behavior-x:contain!important;scroll-snap-type:x proximity!important;-webkit-overflow-scrolling:touch!important}
+ .wl-page-dock .wl-dock-links::-webkit-scrollbar,.chapter-dock .dock-links::-webkit-scrollbar{display:none!important}
+ .wl-page-dock .wl-dock-links>a,.chapter-dock .dock-links>a{display:inline-flex!important;flex:0 0 auto!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;min-width:0!important;height:40px!important;min-height:40px!important;padding:7px 11px!important;gap:4px!important;border-radius:11px!important;white-space:nowrap!important;scroll-snap-align:start!important}
+ .wl-page-dock .wl-dock-links>a>span,.chapter-dock .dock-links>a>span{font-size:10px!important;line-height:1!important}
+ .wl-page-dock .wl-dock-links>a>b,.chapter-dock .dock-links>a>b{font-size:12px!important;line-height:1!important;white-space:nowrap!important}
+ .wl-dock-arrow,.chapter-dock>button{display:none!important}
+ .wl-shell-whatsapp,.whatsapp-float{bottom:max(72px,calc(64px + env(safe-area-inset-bottom)))!important}
+}
+@media(max-width:380px){
+ .wl-shell-brand img,.header .brand img{width:137px!important}
+ .wl-shell-cta,.header .header-actions .button{padding:7px 10px!important;font-size:11px!important}
+ .wl-page-dock .wl-dock-links>a,.chapter-dock .dock-links>a{padding:7px 9px!important}
+}
