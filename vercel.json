@@ -4,11 +4,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": [
-        "schema.sql",
-        "invitation.html",
-        "proposal.html"
-      ]
+      "includeFiles": "{schema.sql,invitation.html,proposal.html}"
     }
   },
   "rewrites": [
