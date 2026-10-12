@@ -15,6 +15,60 @@ const SERVICE={
  commerce:['Online stores & commerce','🛍️','Product catalogues, enquiry or checkout workflows and appropriate payment integrations.'],
  nexora:['Nexora opportunities','✨','Explore the wider Nexora One community and developing tools that may support future growth.']
 };
+
+// Deep links point to WebLift's verified live pages, not speculative service routes.
+const SERVICE_LINK={
+ websites:'https://weblift-sa.vercel.app/#services',
+ domains:'https://weblift-sa.vercel.app/#packages',
+ marketing:'https://weblift-sa.vercel.app/marketing.html',
+ social:'https://weblift-sa.vercel.app/marketing.html',
+ seo:'https://weblift-sa.vercel.app/marketing.html',
+ ads:'https://weblift-sa.vercel.app/marketing.html',
+ design:'https://weblift-sa.vercel.app/marketing.html#builder',
+ support:'https://weblift-sa.vercel.app/#packages',
+ commerce:'https://weblift-sa.vercel.app/#services',
+ nexora:'https://weblift-sa.vercel.app/#growth'
+};
+let demoTimer=null;
+const demoSteps=[
+ 'Your customer finds your website or social page and is ready to discover your business.',
+ 'A sample enquiry is captured and organised for follow-up. No real customer data is used.',
+ 'A quotation or response can be prepared for review and approval. This simulation sends nothing.',
+ 'Marketing content and performance reports can help maintain momentum after launch.'
+];
+let demoStage=-1;
+function paintAutomation(step){
+ const boxes=[...document.querySelectorAll('.autom-stage')];
+ for(let i=0;i<boxes.length;i++){
+  boxes[i].classList.toggle('is-active',i===step);
+  boxes[i].classList.toggle('is-done',i<step);
+  const check=boxes[i].querySelector('.autom-check');
+  if(check)check.textContent=i<step?'✓':i===step?'●':'○';
+ }
+ const fill=$('autom-progress-fill');
+ if(fill)fill.style.width=step<0?'0%':((step+1)/4*100)+'%';
+ const desc=$('automation-description');
+ if(desc)desc.textContent=step<0?'Ready to see a sample of how connected digital services could support a growing business.':demoSteps[step]+(step===3?' Demonstration complete. Explore the actual WebLift services to discuss an implementation.':'');
+ const button=$('run-automation');
+ if(button){button.disabled=demoTimer!==null;button.textContent=step===3?'↻ Run again':'▶ Run the demonstration'}
+}
+function stopAutomation(){
+ if(demoTimer!==null){clearInterval(demoTimer);demoTimer=null}
+}
+function startAutomation(){
+ stopAutomation();demoStage=0;paintAutomation(demoStage);
+ const run=$('run-automation');if(run)run.disabled=true;
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  demoStage=3;paintAutomation(3);return;
+ }
+ demoTimer=window.setInterval(()=>{
+  demoStage++;
+  if(demoStage>=3){stopAutomation();demoStage=3}
+  paintAutomation(demoStage);
+ },1100);
+}
+function resetAutomation(){stopAutomation();demoStage=-1;paintAutomation(-1)}
+
 function status(message,err=false){
  const x=$('response-status');x.textContent=message;x.style.color=err?'#ffd2b2':'#d6eddb';
 }
@@ -47,7 +101,12 @@ function render(data){
  $('personal-message').textContent=note;
  const selected=new Set(Array.isArray(data.selected_services)?data.selected_services:[]);
  const tags=$('service-tags');tags.replaceChildren();
- for(const id of selected)if(SERVICE[id])tags.append(make('span','',SERVICE[id][0]));
+ for(const id of selected)if(SERVICE[id]){
+  const link=make('a','',SERVICE[id][0]+' ↗');
+  link.href=SERVICE_LINK[id];link.target='_blank';link.rel='noopener noreferrer';
+  link.style.cssText='display:inline-flex;align-items:center;background:#eaf4e8;border:1px solid #c9e0ce;border-radius:999px;padding:9px 13px;color:#175d41;font-weight:750;font-size:11px;text-decoration:none';
+  tags.append(link);
+ }
  const grid=$('service-grid');grid.replaceChildren();
  const ids=[...selected].filter(id=>SERVICE[id]);
  for(const id of Object.keys(SERVICE))if(!ids.includes(id))ids.push(id);
@@ -55,7 +114,9 @@ function render(data){
   const [title,emoji,desc]=SERVICE[id];const card=make('article','service-card'+(selected.has(id)?' relevant':''));
   card.append(make('div','emblem',emoji));
   if(selected.has(id))card.append(make('div','recommended','Selected for your business'));
-  card.append(make('h3','',title),make('p','',desc));grid.append(card);
+  const deep=make('a','',id==='nexora'?'Explore Nexora ↗':id==='marketing'||id==='social'?'Discover marketing plans ↗':'See how it works ↗');
+  deep.href=SERVICE_LINK[id];deep.target='_blank';deep.rel='noopener noreferrer';deep.setAttribute('aria-label','Explore '+title+' on WebLift SA');
+  card.append(make('h3','',title),make('p','',desc),deep);grid.append(card);
  }
  const url=safePublicUrl(data.project_url);
  if(url){
@@ -102,6 +163,10 @@ async function respond(decision){
  }catch(e){status(e.message||'Please try again.',true);$('interested').disabled=false;$('later').disabled=false}
  finally{busy=false}
 }
+$('run-automation')?.addEventListener('click',startAutomation);
+$('reset-automation')?.addEventListener('click',resetAutomation);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAutomation()});
+paintAutomation(-1);
 $('interested').addEventListener('click',()=>respond('interested'));
 $('later').addEventListener('click',()=>respond('not_now'));
 load().catch(e=>{
