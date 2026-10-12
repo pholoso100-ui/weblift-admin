@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>WebLift SA · Admin Workspace</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#104532;background:#eaf2e8}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh}header{height:59px;padding:8px clamp(8px,2vw,26px);display:flex;align-items:center;gap:9px;background:#f4f8f0;border-bottom:1px solid #ccdccc}
+.brand{font-weight:850;letter-spacing:-.025em;white-space:nowrap;font-size:clamp(13px,3vw,18px);color:#12472f;text-decoration:none}.brand small{font-size:10px;font-weight:600;color:#75877b;display:block;letter-spacing:.07em;text-transform:uppercase}
+nav{display:flex;gap:5px;flex:1;justify-content:flex-end;overflow:auto;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+nav button{font-size:clamp(11px,2.9vw,14px);font-weight:750;white-space:nowrap;border-radius:11px;border:1px solid #cbdccd;padding:10px 11px;color:#16513c;background:transparent;cursor:pointer}
+nav button[aria-current="page"]{background:#12583d;border-color:#12583d;color:#fff}
+.frame{display:block;width:100%;height:calc(100dvh - 59px);border:0;background:#eaf3e8}
+.notice{background:#fff7df;border-bottom:1px solid #e7ce91;color:#765317;padding:6px 12px;font-size:12px;display:none;text-align:center}
+a.help{color:#16583a;font-weight:650;text-decoration:none;margin-left:8px}
+@media(max-width:440px){header{height:57px;padding:5px 8px}.brand{font-size:13px}.brand small{font-size:8px}nav button{padding:9px 7px;font-size:11px}.frame{height:calc(100dvh - 57px)}}
+</style>
+</head>
+<body>
+<header>
+<a class="brand" href="https://weblift-sa.vercel.app/" aria-label="WebLift SA homepage">WebLift SA<small>Admin workspace</small></a>
+<nav aria-label="WebLift administration modules">
+<button type="button" id="go-workspace" aria-current="page">Overview &amp; Email</button>
+<button type="button" id="go-sales">Sales &amp; Pricing</button>
+<button type="button" id="go-dropship">Dropshipping</button>
+</nav>
+</header>
+<div id="notice" class="notice" role="status">The embedded workspace could not be loaded. <a id="fallback" class="help" href="/admin/original">Open the original administration</a></div>
+<iframe id="workframe" class="frame" src="/admin/original" title="WebLift administration" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-write"></iframe>
+<script>
+(function(){
+"use strict";
+const host=location.hostname;
+const isWeblift=host==="weblift-sa.vercel.app";
+const home=isWeblift?"/admin/original":"https://weblift-sa.vercel.app/admin.html";
+const sales=isWeblift?"/admin/sales":"https://weblift-sa.vercel.app/admin/sales";
+const dropship=isWeblift?"/dropshipping-admin.html":"https://weblift-sa.vercel.app/dropshipping-admin.html";
+const frame=document.getElementById("workframe");
+const views={workspace:home,sales,dropship};
+let active="workspace";
+function show(which){
+active=which;
+for(const x of ["workspace","sales","dropship"]){
+let btn=document.getElementById("go-"+x);
+if(x===which)btn.setAttribute("aria-current","page");else btn.removeAttribute("aria-current");
+}
+document.getElementById("notice").style.display="none";
+if(frame.src!==new URL(views[which],location.href).href)frame.src=views[which];
+}
+for(const k of ["workspace","sales","dropship"]){
+document.getElementById("go-"+k).addEventListener("click",()=>show(k));
+}
+function injectSalesTab(){
+try{
+const doc=frame.contentDocument;
+if(!doc||!doc.body||active!=="workspace")return;
+const original=doc.querySelector("[data-tab]");
+if(!original||doc.getElementById("weblift-sales-nav"))return;
+const b=doc.createElement("button");
+b.type="button";b.id="weblift-sales-nav";b.textContent="Sales & Pricing";
+b.className=original.className;
+b.style.whiteSpace="nowrap";
+b.style.cursor="pointer";
+b.addEventListener("click",()=>show("sales"));
+original.parentElement.appendChild(b);
+}catch(e){/* Existing workspace remains usable even if cross-origin access is disallowed. */}
+}
+frame.addEventListener("load",()=>{injectSalesTab();});
+if(!isWeblift){
+document.getElementById("notice").style.display="block";
+document.getElementById("notice").firstChild.textContent="This is a Render preview. Use the primary WebLift domain after routing is enabled. ";
+}
+show("workspace");
+})();
+</script>
+</body></html>
