@@ -3,6 +3,7 @@ import pg from 'pg';
 import PDFDocument from 'pdfkit';
 import {randomBytes} from 'node:crypto';
 import {readFileSync} from 'node:fs';
+import {mountShareCards} from './share-card.js';
 const app=express();app.disable('x-powered-by');app.use(express.json({limit:'80kb'}));
 const ORIGIN='https://weblift-sa.vercel.app', PORT=Number(process.env.PORT||10000);
 const pool=process.env.DATABASE_URL?new pg.Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.PG_SSL==='false'?false:{rejectUnauthorized:false},max:5,connectionTimeoutMillis:7000}):null;
@@ -159,6 +160,7 @@ app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,
   res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/share?token='+token});
  }catch(e){await c.query('ROLLBACK').catch(()=>{});res.status(400).json({error:toText(e.message||'Cannot create quotation.',150)})}finally{c.release()}
 });
+mountShareCards(app,{pool,requireDb,origin:ORIGIN,validToken});
 app.get('/api/sales/proposal/:token',requireDb,async(req,res)=>{
  if(!validToken(req.params.token))return res.sendStatus(404);
  try{const q=await pool.query('SELECT id,client_name,company,project_id,project_url,package_code,items,total_cents,base_cents,monthly_cents,deposit_cents,balance_cents,notes,status,version,invoice_no,created_at,accepted_at,nexora_opt_in,reward_potential_cents,reward_status,nexora_verification_status,COALESCE((SELECT SUM(amount_cents) FROM wl_payments w WHERE w.proposal_id=wl_proposals.id),0)::integer AS paid_cents FROM wl_proposals WHERE token=$1',[req.params.token]);if(!q.rowCount)return res.sendStatus(404);res.json({proposal:{...q.rows[0],reward_program:{rate:0.10,value_per_N_cents:10000,registration_url:'https://nexora-one-gamma-mocha.vercel.app/',verification_available:false},pdf_ready:q.rows[0].status==='accepted'}})}catch{res.status(500).json({error:'Unable to retrieve proposal.'})}
