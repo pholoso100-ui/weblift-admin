@@ -26,45 +26,31 @@ async function retrieve(url,timeout=4200){
   return b;
  }finally{clearTimeout(timer)}
 }
-async function unfinished(b){
- const r=await sharp(b,{animated:false}).resize(40,25).removeAlpha().raw().toBuffer({resolveWithObject:true});
- let white=0,gray=0;const total=r.info.width*r.info.height;
- for(let i=0;i<r.data.length;i+=r.info.channels){
-  const a=r.data[i],b=r.data[i+1],c=r.data[i+2];
-  if(a>225&&b>225&&c>225)white++;
-  if(Math.max(a,b,c)-Math.min(a,b,c)<13)gray++;
- }
- return white/total>.83&&gray/total>.93;
-}
 async function coverFor(siteUrl,origin){
  const site=approved(siteUrl),key=site?.hostname||'default';
  const old=cache.get(key);
- if(old&&Date.now()-old.time<15*60*1000)return old;
+ if(old&&Date.now()-old.time<30*60*1000)return old;
  if(inflight.has(key))return inflight.get(key);
- const work=(async()=>{
-  let image=null,kind='artwork';
-  if(site){
-   try{
-    // "noanimate" blocks for the final screenshot instead of streaming the spinner.
-    const candidate=await retrieve('https://image.thum.io/get/noanimate/ogImage/'+site.href,4500);
-    if(await unfinished(candidate))throw Error('Loading frame detected');
-    image=candidate;kind='completed-screenshot';
-   }catch{}
+ const task=(async()=>{
+  let image=null,kind='portfolio-artwork';
+  // These public project illustrations are hosted by WebLift and represent its
+  // actual portfolio projects. No image capture stream, spinner or third-party
+  // screenshot dependency is used in WhatsApp previews.
+  const asset=site?'/premium-v3/assets/'+catalogue.get(site.hostname):'/premium-v3/assets/hero-nexora-v3.webp';
+  try{image=await retrieve(origin+asset,5500)}catch{}
+  if(!image){
+   try{image=await retrieve(origin+'/premium-v3/assets/hero-nexora-v3.webp',4500)}catch{}
   }
   if(!image){
-   const file=site?'/premium-v3/assets/'+catalogue.get(site.hostname):'/premium-v3/assets/hero-nexora-v3.webp';
-   try{image=await retrieve(origin+file,4500)}catch{}
-  }
-  if(!image){
-   image=Buffer.from('<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="630" fill="#dbefdf"/><path d="M0 520 1200 200V630H0Z" fill="#b1d4bc"/></svg>');
+   image=Buffer.from('<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="630" fill="#e9f2e8"/><path d="M0 520 1200 200V630H0Z" fill="#c9e2cf"/><circle cx="900" cy="180" r="170" fill="#e5d0a3"/></svg>');
    kind='brand-only';
   }
-  const c={image,kind,time:Date.now()};cache.set(key,c);
+  const value={image,kind,time:Date.now()};cache.set(key,value);
   if(cache.size>50)cache.delete(cache.keys().next().value);
-  return c;
+  return value;
  })();
- inflight.set(key,work);
- try{return await work}finally{inflight.delete(key)}
+ inflight.set(key,task);
+ try{return await task}finally{inflight.delete(key)}
 }
 export function warmShareCover(siteUrl,origin){void coverFor(siteUrl,origin).catch(()=>{})}
 async function compose({siteUrl,name,origin}){
@@ -122,7 +108,7 @@ export function mountShareCards(app,{pool,requireDb,origin,validToken}){
    const q=await pool.query('SELECT project_id,project_url,company FROM wl_proposals WHERE token=$1 LIMIT 1',[token]);
    if(!q.rowCount)return res.sendStatus(404);
    const p=q.rows[0];
-   return renderCard(res,{origin,name:p.project_id||p.company,canonical:origin+'/share?token='+encodeURIComponent(token)+'&pv=4',image:origin+'/share-image/'+encodeURIComponent(token)+'.jpg?pv=4'});
+   return renderCard(res,{origin,name:p.project_id||p.company,canonical:origin+'/share?token='+encodeURIComponent(token)+'&pv=5',image:origin+'/share-image/'+encodeURIComponent(token)+'.jpg?pv=5'});
   }catch{return res.status(503).send('WebLift proposal preview temporarily unavailable')}
  });
  app.get('/share-image/:token.jpg',requireDb,async(req,res)=>{
@@ -136,7 +122,7 @@ export function mountShareCards(app,{pool,requireDb,origin,validToken}){
   }catch{return res.status(503).send('Image temporarily unavailable')}
  });
  app.get('/share-preview-demo',(req,res)=>renderCard(res,{
-  origin,name:demo.name,canonical:origin+'/share-preview-demo?pv=4',image:origin+'/share-image-demo.jpg?pv=4'
+  origin,name:demo.name,canonical:origin+'/share-preview-demo?pv=5',image:origin+'/share-image-demo.jpg?pv=5'
  }));
  app.get('/share-image-demo.jpg',async(req,res)=>{
   try{
