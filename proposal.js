@@ -59,6 +59,12 @@ function render(){
   row.append(check,text,price);list.append(row);
  }
  $('monthly').textContent=p.monthly_cents?money(p.monthly_cents)+' / month':'None';
+ $('payment-reference').textContent=p.invoice_no||'Provided on approval invoice';
+ $('copy-payment-reference').hidden=!p.invoice_no;
+ $('bank-approval-note').textContent=p.invoice_no
+   ?'Use the invoice reference above when paying the 75% deposit or remaining account balance. Please email your proof of payment to your WebLift representative.'
+   :'Please approve your quotation before paying. Your invoice will confirm the correct reference and the 75% deposit amount.';
+
  $('nexora-opt-in').checked=!!p.nexora_opt_in;
  $('nexora-opt-in').disabled=final;
  $('actions').hidden=final;$('issued').hidden=p.status!=='accepted';
@@ -94,6 +100,23 @@ async function decide(action){
  }catch(e){error(e.message||'Please try again.')}
  finally{setBusy(false)}
 }
+
+async function copyPaymentValue(value,label){
+ const status=$('bank-copy-status');
+ try{
+  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value)}
+  else{
+   const target=document.createElement('textarea');target.value=value;target.readOnly=true;target.style.position='absolute';target.style.left='-9999px';document.body.append(target);target.select();
+   if(!document.execCommand('copy'))throw Error('Clipboard unavailable');target.remove();
+  }
+  status.textContent=label+' copied.';
+ }catch{
+  status.textContent='Copy unavailable. Select and copy the number directly: '+value;
+ }
+}
+$('copy-bank-account').addEventListener('click',()=>copyPaymentValue('20160546562','Account number'));
+$('copy-payment-reference').addEventListener('click',()=>{if(proposal?.invoice_no)copyPaymentValue(proposal.invoice_no,'Invoice reference')});
+
 $('save').addEventListener('click',()=>decide('revise'));
 $('approve').addEventListener('click',()=>decide('accept'));
 $('decline').addEventListener('click',()=>decide('decline'));
