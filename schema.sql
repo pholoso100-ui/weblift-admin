@@ -39,3 +39,19 @@ CREATE TABLE IF NOT EXISTS wl_sales_events (
  details jsonb NOT NULL DEFAULT '{}'::jsonb,
  created_at timestamptz NOT NULL DEFAULT now()
 );
+-- Consent and reward intent are recorded; no coins are issued by this service.
+ALTER TABLE wl_proposals ADD COLUMN IF NOT EXISTS nexora_opt_in boolean NOT NULL DEFAULT false;
+ALTER TABLE wl_proposals ADD COLUMN IF NOT EXISTS nexora_consent_at timestamptz;
+ALTER TABLE wl_proposals ADD COLUMN IF NOT EXISTS nexora_verification_status text NOT NULL DEFAULT 'not_verified';
+ALTER TABLE wl_proposals ADD COLUMN IF NOT EXISTS reward_status text NOT NULL DEFAULT 'not_issued';
+ALTER TABLE wl_proposals ADD COLUMN IF NOT EXISTS reward_potential_cents integer NOT NULL DEFAULT 0;
+CREATE TABLE IF NOT EXISTS wl_payments (
+ id bigserial PRIMARY KEY,
+ proposal_id uuid NOT NULL REFERENCES wl_proposals(id),
+ amount_cents integer NOT NULL CHECK(amount_cents > 0),
+ reference text NOT NULL,
+ recorded_by text NOT NULL,
+ recorded_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE(proposal_id,reference)
+);
+CREATE INDEX IF NOT EXISTS wl_payments_proposal_idx ON wl_payments(proposal_id);
