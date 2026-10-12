@@ -18,17 +18,21 @@ if(!isPrimary){
   bootstrapIdentity();
 }
 function enterGate(message="Use your approved WebLift account to sign in."){
- isAuthenticated=false;
+ isAuthenticated=false;currentAdmin=null;
  gate.hidden=false;workspace.hidden=true;preview.hidden=true;
+ $("gate-title").textContent="Your WebLift workspace.";
  $("gate-message").textContent=message;
- if(frame.parentElement!==gate)gate.append(frame);
- if(frame.getAttribute("src")!==originalAdmin)frame.src=originalAdmin;
- frame.style.cssText="display:block;width:100%;height:68vh;min-height:530px;margin:22px 0 0;border:1px solid #d9e7dc;border-radius:14px;background:#eff6eb";
+ $("shell-signout").hidden=true;
+ $("workspace-login").hidden=false;
+ if(frame.parentElement)frame.remove();
+ if(frame.getAttribute("src")!=="about:blank")frame.src="about:blank";
 }
 function enterWorkspace(admin,user){
  isAuthenticated=true;currentAdmin=admin;
- gate.hidden=true;workspace.hidden=false;
- pane.append(frame);frame.style.cssText="";
+ gate.hidden=true;workspace.hidden=false;preview.hidden=true;
+ $("shell-signout").hidden=false;
+ if(frame.parentElement!==pane)pane.append(frame);
+ frame.style.cssText="";
  $("member-label").textContent=(user.displayName||user.email||"Administrator")+" · "+(admin.role||"admin");
  navigate("overview");
 }
@@ -36,26 +40,58 @@ async function bootstrapIdentity(){
  try{
   const account=await import("/premium-v3/customer-auth.js");
   await account.ready;
+  const firebase=await import("https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js");
+  const form=$("workspace-login");
+  const submit=$("workspace-login-submit");
+  const loginStatus=$("workspace-login-status");
+  submit.disabled=false;
+  form.addEventListener("submit",async e=>{
+   e.preventDefault();
+   const email=$("workspace-email").value.trim(),password=$("workspace-password").value;
+   if(!email||!password)return;
+   submit.disabled=true;loginStatus.textContent="Signing in securely…";
+   try{
+    await firebase.signInWithEmailAndPassword(account.auth,email,password);
+    $("workspace-password").value="";
+    loginStatus.textContent="Signed in. Checking your administrator access…";
+   }catch(e){
+    loginStatus.textContent=e.code==="auth/invalid-credential"?"Incorrect email or password.":(e.message||"Unable to sign in.");
+   }finally{submit.disabled=false}
+  });
+  $("workspace-reset-password").addEventListener("click",async()=>{
+   const email=$("workspace-email").value.trim();
+   if(!email){loginStatus.textContent="Enter your email address first.";return}
+   try{await firebase.sendPasswordResetEmail(account.auth,email);loginStatus.textContent="If this email is registered, password-reset instructions have been sent."}
+   catch{loginStatus.textContent="Password reset could not be started. Please retry shortly."}
+  });
+  $("shell-signout").addEventListener("click",async()=>{
+   try{await firebase.signOut(account.auth)}
+   catch{enterGate("Sign-out was interrupted. Refresh the page to confirm your session.")}
+  });
   let seq=0;
   account.onCustomerChange(async user=>{
     const n=++seq;
-    if(!user){enterGate("Sign in to the WebLift website below. Management controls remain hidden until your account is verified.");return}
+    if(!user){enterGate("Sign in to WebLift to manage your customers, emails and quotations.");return}
     gate.hidden=false;
     $("gate-title").textContent="Verifying your permissions…";
-    $("gate-message").textContent="Checking WebLift's private administrator access.";
+    $("gate-message").textContent="Checking your WebLift administrator access.";
     try{
       const token=await user.getIdToken();
       const response=await fetch("/api/manage",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({action:"overview"}),cache:"no-store"});
-      if(!response.ok)throw Error(response.status===403?"This account is not approved to administer WebLift.":"Administrator permission verification failed ("+response.status+").");
+      if(!response.ok)throw Error(response.status===403?"This account is not approved to administer WebLift.":"Administrator verification failed ("+response.status+").");
       const data=await response.json();
       if(n!==seq)return;
-      if(!data.admin||!["owner","administrator","support","analyst"].includes(data.admin.role))throw Error("WebLift did not confirm administrative privileges.");
-      $("gate-title").textContent="Your WebLift workspace.";
+      if(!data.admin||!["owner","administrator","support","analyst"].includes(data.admin.role))throw Error("WebLift could not verify administrator privileges.");
+      loginStatus.textContent="";
       enterWorkspace(data.admin,user);
-    }catch(e){if(n!==seq)return;enterGate(e.message+" Sign in with an approved administrator account.");}
+    }catch(e){
+      if(n!==seq)return;
+      enterGate((e.message||"Administrator login failed.")+" Your account remains protected.");
+    }
   });
  }catch(e){
-   enterGate("The secure sign-in service could not be loaded. Please retry your WebLift administrator login.");
+   enterGate("Secure WebLift sign-in could not load. Refresh the page to retry.");
+   $("workspace-login-status").textContent="Unable to load the secure sign-in library.";
  }
 }
 let renderedTab=null;
@@ -63,13 +99,14 @@ function hideDuplicateNavigation(){
  if(!isAuthenticated||!isPrimary||activeSection==="quotation")return;
  try{
   const doc=frame.contentDocument;
-  if(!doc)return;
-  const tabs=[...doc.querySelectorAll("[data-tab]")];
-  if(tabs.length){
-   const parent=tabs[0].parentElement;
-   if(parent)parent.style.setProperty("display","none","important");
+  if(!doc?.head)return;
+  if(!doc.getElementById("weblift-unified-embed-styles")){
+   const sheet=doc.createElement("style");
+   sheet.id="weblift-unified-embed-styles";
+   sheet.textContent=".admin-head,.tabs{display:none!important}.wrap{margin:12px auto 20px!important;width:calc(100% - 24px)!important}.admin-stats,.stats{margin-top:8px!important}body{background:#f3f8ef!important}";
+   doc.head.append(sheet);
   }
- }catch{} 
+ }catch{}
 }
 async function navigate(value){
  if(!isAuthenticated)return;
@@ -99,8 +136,7 @@ frame.addEventListener("load",()=>{
  if(!isAuthenticated)return;
  if(["overview","mail","guests","team","brand","activity"].includes(activeSection)){
    selectOriginalTab(activeSection);
-   // Original module may render navigation after async permission checks.
-   [350,1100].forEach(ms=>setTimeout(()=>{if(isAuthenticated)selectOriginalTab(activeSection)},ms));
+   [350,1100,2400].forEach(ms=>setTimeout(()=>{if(isAuthenticated&&frame.getAttribute("src")===originalAdmin){selectOriginalTab(activeSection);hideDuplicateNavigation()}},ms));
  }
 });
 select.addEventListener("change",e=>navigate(e.target.value));
