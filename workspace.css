@@ -10,3 +10,42 @@ main{max-width:1450px;margin:auto;padding:36px clamp(14px,5vw,64px) 50px}.auth-p
 
 .print-only{display:none}@media print{.print-only{display:block!important;white-space:pre-wrap;line-height:1.6;font-size:10pt;margin:15pt 0;padding:10pt;border:1px solid #ddd;border-radius:8pt}}
 .brand-logo{width:190px;max-width:38vw;height:50px;object-fit:contain;object-position:left center}.identity{gap:14px}@media(max-width:620px){.brand-logo{width:138px;height:43px}.brandcopy small{font-size:8px;max-width:82px;line-height:1.25}}
+
+/* Authenticated single-navigation hotfix: 2026-10-12 */
+.site-header{position:sticky;top:0;z-index:110;-webkit-backdrop-filter:blur(20px) saturate(155%);backdrop-filter:blur(20px) saturate(155%);background:rgba(245,250,243,.83)}
+.controlbar{position:sticky;top:86px;z-index:105;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);background:rgba(250,253,249,.88)}
+.workspace-login{display:grid;gap:13px;text-align:left;max-width:420px;margin:20px auto 4px}
+.workspace-login label{display:grid;gap:6px;color:#356c51;font-size:12px;font-weight:780}
+.workspace-login input{width:100%;min-height:45px;padding:12px 14px;border:1px solid #bfdbc5;border-radius:12px;background:#f5fbf4;color:#15432f;font-size:15px;outline:none}
+.workspace-login input:focus{border-color:#1a9263;box-shadow:0 0 0 3px #26956726}
+.workspace-login button{font:inherit;cursor:pointer}
+.workspace-login .subtle-action{justify-self:center;border:0;background:none;text-decoration:underline;padding:8px 10px}
+#workspace-login-status{min-height:18px;font-size:12px;color:#805e36;text-align:center}
+.sign-in-help{max-width:420px;margin:10px auto 0;color:#748576;font-size:12px}
+.sign-in-help summary{cursor:pointer;display:inline-block}
+.sign-in-help .text-link{display:block;padding:9px}
+.signout-btn{cursor:pointer}
+@media(max-width:620px){
+.site-header{height:53px;padding:5px 13px}
+.site-header .brand-logo{max-height:31px!important;max-width:140px}
+.site-header .brandcopy small{font-size:7px;white-space:nowrap}
+.site-header .home-link,.site-header .signout-btn{padding:7px 9px;font-size:10px;line-height:1.1}
+.header-right{gap:7px}
+.brandcopy{display:none}
+main{padding:12px 10px 45px}
+.auth-panel{margin:5vh auto 0;padding:23px 20px;border-radius:20px}
+.auth-panel h1{font-size:32px}
+.intro{margin:0 0 8px}
+.intro h1{font-size:21px;letter-spacing:-.025em;margin:0 0 3px}
+.intro h1 em{display:none}
+.intro .eyebrow{display:none}
+.intro .muted{display:none}
+.identity-badge{display:none}
+.controlbar{top:57px;display:flex;flex-direction:row;gap:8px;padding:7px 9px;margin-bottom:9px;border-radius:13px}
+.single-menu{width:100%}
+.single-menu label{font-size:8px;margin:0 0 2px}
+.single-menu select{min-height:39px;padding:8px 26px 8px 10px;font-size:13px;border-radius:10px}
+.bar-actions{display:none}
+.page-pane{border-radius:13px}
+.page-pane iframe{height:calc(100dvh - 175px);min-height:450px}
+}
