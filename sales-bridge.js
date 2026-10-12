@@ -82,10 +82,32 @@ export async function activateSalesBridge(read){
     const row=document.createElement('div');row.className='sales-record';
     const desc=document.createElement('span'),title=document.createElement('b'),sub=document.createElement('small');
     title.textContent=p.company||p.client_name;
-    sub.textContent=(p.status||'pending').toUpperCase()+' · '+money(p.total_cents)+(p.invoice_no?' · '+p.invoice_no:'');
+    sub.textContent=(p.status||'pending').toUpperCase()+' · '+money(p.total_cents)+(p.invoice_no?' · '+p.invoice_no:'')+(p.invoice_no?' · '+(p.books_status==='paid_in_full'?'PAID IN FULL':'OPEN · '+money(p.outstanding_cents)+' OUTSTANDING'):'');
     desc.append(title,sub);
     const a=document.createElement('a');a.href=p.share_url;a.textContent='Open ↗';a.target='_blank';a.rel='noopener noreferrer';
-    row.append(desc,a);box.append(row);
+    row.append(desc,a);
+    if(p.invoice_no&&Number(p.outstanding_cents)>0&&read.authorized()){
+     const record=document.createElement('button');record.type='button';record.className='subtle-action';record.textContent='Record payment';
+     record.onclick=async()=>{
+      const value=prompt('Verified payment received (rand), e.g. 750.00. Do not record a transfer until it appears in your bank account.','');
+      if(value===null)return;
+      const amount=Number(value.replace(/[^0-9.]/g,''));
+      if(!Number.isFinite(amount)||amount<=0){read.notify('Enter a positive payment amount.',true);return}
+      const reference=prompt('Bank transaction reference (unique for this payment):','');
+      if(reference===null)return;
+      if(!reference.trim()){read.notify('A verified bank reference is required.',true);return}
+      if(!confirm('Record '+money(Math.round(amount*100))+' received for '+(p.company||p.client_name)+'? This will update the invoice balance.'))return;
+      record.disabled=true;
+      try{
+       const response=await request('/api/sales/admin/proposals/'+encodeURIComponent(p.id)+'/payments',{method:'POST',body:JSON.stringify({amount_cents:Math.round(amount*100),reference:reference.trim()})});
+       read.notify(response.books_status==='paid_in_full'?'Payment saved. Account PAID IN FULL.':'Payment saved. Remaining account balance '+money(response.outstanding_cents));
+       await refresh();
+      }catch(e){read.notify(e.message||'Payment recording failed.',true)}
+      finally{record.disabled=false}
+     };
+     row.append(record);
+    }
+    box.append(row);
    }
   }catch(e){
    online=false;state([401,403].includes(e.status)?'ADMIN VERIFICATION REQUIRED':/database|503/i.test(e.message||'')?'DATABASE UNAVAILABLE':'SALES SERVICE UNAVAILABLE');
