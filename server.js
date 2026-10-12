@@ -103,7 +103,7 @@ app.patch('/api/sales/admin/settings',authenticate,writable,requireDb,async(req,
 });
 app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query(`SELECT p.id,p.token,p.client_name,p.company,p.client_email,p.project_id,p.total_cents,p.deposit_cents,p.balance_cents,p.status,p.version,p.invoice_no,p.created_at,p.updated_at,p.nexora_opt_in,p.reward_status,p.reward_potential_cents,COALESCE((SELECT SUM(amount_cents) FROM wl_payments w WHERE w.proposal_id=p.id),0)::integer AS paid_cents FROM wl_proposals p ORDER BY p.created_at DESC LIMIT 150`);
-  res.json({proposals:q.rows.map(i=>({...i,outstanding_cents:Math.max(0,i.total_cents-i.paid_cents),books_status:i.invoice_no&&i.paid_cents>=i.total_cents?'paid_in_full':'open',share_url:ORIGIN+'/share?token='+i.token+'&pv=4'}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
+  res.json({proposals:q.rows.map(i=>({...i,outstanding_cents:Math.max(0,i.total_cents-i.paid_cents),books_status:i.invoice_no&&i.paid_cents>=i.total_cents?'paid_in_full':'open',share_url:ORIGIN+'/share?token='+i.token+'&pv=5'}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
 });
 app.get('/api/sales/admin/events',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT event_type,proposal_id,details,created_at FROM wl_sales_events ORDER BY created_at DESC LIMIT 80');res.json({events:q.rows})}catch{res.status(500).json({error:'Cannot read sales notifications.'})}
@@ -158,7 +158,7 @@ app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,
   await event(c,q.rows[0].id,'created',{total_cents:calc.total});
   await c.query('COMMIT');
   warmShareCover(toText(b.project_url,350),ORIGIN);
-  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/share?token='+token+'&pv=4'});
+  res.status(201).json({...q.rows[0],total_cents:calc.total,deposit_cents:calc.deposit,balance_cents:calc.balance,share_url:ORIGIN+'/share?token='+token+'&pv=5'});
  }catch(e){await c.query('ROLLBACK').catch(()=>{});res.status(400).json({error:toText(e.message||'Cannot create quotation.',150)})}finally{c.release()}
 });
 mountShareCards(app,{pool,requireDb,origin:ORIGIN,validToken});
