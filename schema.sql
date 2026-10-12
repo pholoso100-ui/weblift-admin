@@ -55,3 +55,30 @@ CREATE TABLE IF NOT EXISTS wl_payments (
  UNIQUE(proposal_id,reference)
 );
 CREATE INDEX IF NOT EXISTS wl_payments_proposal_idx ON wl_payments(proposal_id);
+
+-- Standalone personalised outreach invitations (not financial quotations).
+-- Viewing an invitation never creates an invoice, subscription or Nexora account.
+CREATE TABLE IF NOT EXISTS wl_invitations (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ token text NOT NULL UNIQUE,
+ recipient_name text NOT NULL,
+ business_name text NOT NULL,
+ phone text NOT NULL,
+ email text NOT NULL DEFAULT '',
+ tone text NOT NULL CHECK(tone IN ('grateful','opportunity')),
+ selected_services jsonb NOT NULL DEFAULT '[]'::jsonb,
+ personal_message text NOT NULL DEFAULT '',
+ project_url text NOT NULL DEFAULT '',
+ status text NOT NULL DEFAULT 'created'
+   CHECK(status IN ('created','viewed','interested','not_now','revoked')),
+ views integer NOT NULL DEFAULT 0,
+ first_viewed_at timestamptz,
+ last_viewed_at timestamptz,
+ client_contact_consent boolean NOT NULL DEFAULT false,
+ response_at timestamptz,
+ created_by text NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now(),
+ revoked_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS wl_invitations_recent_idx ON wl_invitations(created_at DESC);
