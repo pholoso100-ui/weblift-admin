@@ -71,3 +71,39 @@ main{padding:12px 10px 45px}
 .live-panel-heading>b{font-size:12px;flex-basis:100%}
 #sales-ledger-status{font-size:10px}
 }
+
+/* Light, editorial reward information and polished quotation print output */
+.reward-preview{display:flex;align-items:flex-start;gap:12px;margin:20px 0;padding:16px;border:1px solid #7a795760;background:linear-gradient(110deg,#31534045,#bc995029);border-radius:13px;color:#e2f3dd}
+.reward-preview .reward-emblem{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border:2px solid #dabd83;background:#fff7d9;color:#96662d;border-radius:50%;font:bold italic 24px Georgia,serif}
+.reward-preview strong{display:block;font-size:12px;margin-bottom:6px}
+.reward-preview p{font-size:11px;line-height:1.7;color:#caddc8;margin:0}
+.reward-preview b{color:#f0dca9}
+#branded-print-header{display:none}
+@media print {
+  @page { size: A4; margin: 18mm 15mm }
+  body{background:#fff!important;color:#1f3f30!important}
+  main{max-width:100%!important;margin:0!important;padding:0!important}
+  .intro,.controlbar,.site-header,.ambient,.quote-main,.quote-head,.reward-preview,.live-sales-panel,.caution,.quote-summary button,.status-line,.quote-summary>.eyebrow{display:none!important}
+  #workspace,#quote-studio,.page-pane,#quote-studio .quote-layout,.quote-side,.quote-summary{display:block!important;position:static!important;width:100%!important;max-width:100%!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:white!important;color:#183d32!important}
+  #branded-print-header{display:flex!important;align-items:center;justify-content:space-between;gap:15px;padding:0 0 17px;border-bottom:5px solid #116548;margin-bottom:22px}
+  #branded-print-header img{width:45%;max-width:245px;height:78px;object-fit:contain;object-position:left}
+  #branded-print-header strong{display:block;color:#185741!important;font-size:18px;letter-spacing:-.025em}
+  #branded-print-header small{display:block;color:#ae824b!important;font-size:9px;letter-spacing:.09em;margin-top:5px}
+  .quote-summary .summary-status{display:inline-block!important;color:#926932!important;background:#fff3de!important;border:1px solid #e9d7aa!important;font-size:10px}
+  .quote-summary h3{font-size:22px!important;color:#174833!important;margin:0 0 12px!important}
+  .quote-summary #print-meta{display:block!important;white-space:pre-wrap;overflow-wrap:anywhere;font-size:10px!important;line-height:1.6;padding:12px;border:1px solid #e3e8df;border-radius:8px;margin:14px 0 18px;color:#395b44!important}
+  .quote-summary .summary-rows{margin:16px 0!important}
+  .quote-summary .summary-line{display:flex!important;border-bottom:1px solid #e3e7e0!important;color:#214737!important;padding:10px 3px!important;gap:20px}
+  .quote-summary .summary-line span,.quote-summary .summary-line b{color:#214737!important;font-size:12px!important}
+  .quote-summary .total-row{margin:20px 0!important;border-top:2px solid #176648;padding-top:15px}
+  .quote-summary .total-row span{font-size:13px;color:#34553c!important}
+  .quote-summary .total-row strong{font-size:27px!important;color:#125b40!important}
+  .quote-summary .milestones{display:flex!important;gap:16px!important}
+  .quote-summary .milestones>div{flex:1!important;background:#eef5ed!important;border:1px solid #dce6d9!important;border-radius:10px!important}
+  .quote-summary .milestones small{color:#5c7260!important}
+  .quote-summary .milestones strong{color:#145b40!important;font-size:20px!important}
+  .quote-summary .progress-payment div:first-child{background:#218257!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .quote-summary .progress-payment div:last-child{background:#c89d57!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .quote-summary .fine{font-size:10px!important;color:#607064!important}
+  .quote-summary:before{display:none!important;content:none!important}
+}
