@@ -25,7 +25,7 @@ async function coverImage(origin){
  try{
   const c=new AbortController(),timer=setTimeout(()=>c.abort(),4200);
   try{
-   const r=await fetch(origin+'/premium-v3/assets/hero-nexora-v3.webp',{signal:c.signal});
+   const r=await fetch(origin+'/premium-v3/assets/hero-marketing-v3.webp',{signal:c.signal});
    if(!r.ok)throw Error('image failed');
    const b=Buffer.from(await r.arrayBuffer());
    if(b.length<2000||b.length>6000000)throw Error('image too large');
