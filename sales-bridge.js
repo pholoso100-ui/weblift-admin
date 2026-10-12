@@ -9,7 +9,7 @@ async function request(path,options={}){
  const token=await m.auth.currentUser.getIdToken();
  const r=await fetch(API+path,{...options,cache:'no-store',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}});
  const body=await r.json().catch(()=>({}));
- if(!r.ok)throw Error(body.error||'Sales service unavailable.');
+ if(!r.ok){const err=Error(body.error||'Sales service unavailable.');err.status=r.status;throw err}
  return body;
 }
 function state(s){
@@ -88,7 +88,7 @@ export async function activateSalesBridge(read){
     row.append(desc,a);box.append(row);
    }
   }catch(e){
-   online=false;state('DATABASE CONNECTION REQUIRED');
+   online=false;state([401,403].includes(e.status)?'ADMIN VERIFICATION REQUIRED':/database|503/i.test(e.message||'')?'DATABASE UNAVAILABLE':'SALES SERVICE UNAVAILABLE');
    $('sales-records').textContent=e.message||'Sales server unavailable.';
   }
  }
