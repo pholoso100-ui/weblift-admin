@@ -101,7 +101,8 @@ app.patch('/api/sales/admin/settings',authenticate,writable,requireDb,async(req,
  try{await pool.query("INSERT INTO wl_config(id,value,updated_at) VALUES('pricing',$1::jsonb,now()) ON CONFLICT (id) DO UPDATE SET value=EXCLUDED.value,updated_at=now()",[JSON.stringify(next)]);res.json({pricing:next})}catch{res.status(500).json({error:'Unable to save pricing settings.'})}
 });
 app.get('/api/sales/admin/proposals',authenticate,requireDb,async(req,res)=>{
- try{const q=await pool.query('SELECT id,token,client_name,company,client_email,project_id,total_cents,deposit_cents,balance_cents,status,version,invoice_no,created_at,updated_at FROM wl_proposals ORDER BY created_at DESC LIMIT 150');res.json({proposals:q.rows.map(i=>({...i,share_url:ORIGIN+'/proposal?token='+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
+ try{const q=await pool.query(`SELECT p.id,p.token,p.client_name,p.company,p.client_email,p.project_id,p.total_cents,p.deposit_cents,p.balance_cents,p.status,p.version,p.invoice_no,p.created_at,p.updated_at,p.nexora_opt_in,p.reward_status,p.reward_potential_cents,COALESCE((SELECT SUM(amount_cents) FROM wl_payments w WHERE w.proposal_id=p.id),0)::integer AS paid_cents FROM wl_proposals p ORDER BY p.created_at DESC LIMIT 150`);
+  res.json({proposals:q.rows.map(i=>({...i,outstanding_cents:Math.max(0,i.total_cents-i.paid_cents),books_status:i.invoice_no&&i.paid_cents>=i.total_cents?'paid_in_full':'open',share_url:ORIGIN+'/proposal?token='+i.token}))})}catch{res.status(500).json({error:'Cannot read sales proposals.'})}
 });
 app.get('/api/sales/admin/events',authenticate,requireDb,async(req,res)=>{
  try{const q=await pool.query('SELECT event_type,proposal_id,details,created_at FROM wl_sales_events ORDER BY created_at DESC LIMIT 80');res.json({events:q.rows})}catch{res.status(500).json({error:'Cannot read sales notifications.'})}
@@ -134,7 +135,7 @@ app.post('/api/sales/admin/proposals',authenticate,writable,requireDb,async(req,
 });
 app.get('/api/sales/proposal/:token',requireDb,async(req,res)=>{
  if(!validToken(req.params.token))return res.sendStatus(404);
- try{const q=await pool.query('SELECT id,client_name,company,project_id,project_url,package_code,items,total_cents,base_cents,monthly_cents,deposit_cents,balance_cents,notes,status,version,invoice_no,created_at,accepted_at FROM wl_proposals WHERE token=$1',[req.params.token]);if(!q.rowCount)return res.sendStatus(404);res.json({proposal:q.rows[0]})}catch{res.status(500).json({error:'Unable to retrieve proposal.'})}
+ try{const q=await pool.query('SELECT id,client_name,company,project_id,project_url,package_code,items,total_cents,base_cents,monthly_cents,deposit_cents,balance_cents,notes,status,version,invoice_no,created_at,accepted_at,nexora_opt_in,reward_potential_cents,reward_status,nexora_verification_status FROM wl_proposals WHERE token=$1',[req.params.token]);if(!q.rowCount)return res.sendStatus(404);res.json({proposal:{...q.rows[0],reward_program:{rate:0.10,value_per_N_cents:10000,registration_url:'https://nexora-one-gamma-mocha.vercel.app/',verification_available:false},pdf_ready:q.rows[0].status==='accepted'}})}catch{res.status(500).json({error:'Unable to retrieve proposal.'})}
 });
 app.post('/api/sales/proposal/:token/action',requireDb,async(req,res)=>{
  const b=req.body||{};
@@ -151,10 +152,20 @@ app.post('/api/sales/proposal/:token/action',requireDb,async(req,res)=>{
   const items=p.items.map(i=>({...i,selected:i.mandatory||selected.has(i.id)}));
   const calc=total(items,p.base_cents);
   const status=b.action==='accept'?'accepted':b.action==='decline'?'declined':'modified';
+  const optIn=b.nexora_opt_in===true;
+  const acceptedTerms=b.accepted_terms===true;
+  if(status==='accepted'&&!acceptedTerms){await c.query('ROLLBACK');return res.status(400).json({error:'Please confirm you agree to the proposal and payment terms before accepting.'})}
+  if(b.nexora_opt_in!==undefined&&typeof b.nexora_opt_in!=='boolean'){await c.query('ROLLBACK');return res.status(400).json({error:'Invalid optional Nexora rewards choice.'})}
   let invoice=null;
   if(status==='accepted'){const s=await c.query("SELECT nextval('wl_invoice_seq') AS n");invoice='WL-INV-'+String(s.rows[0].n).padStart(6,'0')}
-  const u=await c.query('UPDATE wl_proposals SET items=$2::jsonb,total_cents=$3,deposit_cents=$4,balance_cents=$5,status=$6,version=version+1,updated_at=now(),invoice_no=COALESCE($7,invoice_no),accepted_at=CASE WHEN $6=$8 THEN now() ELSE accepted_at END,declined_at=CASE WHEN $6=$9 THEN now() ELSE declined_at END WHERE id=$1 RETURNING status,version,total_cents,deposit_cents,balance_cents,invoice_no',[p.id,JSON.stringify(calc.items),calc.total,calc.deposit,calc.balance,status,invoice,'accepted','declined']);
-  await event(c,p.id,status,{reason:toText(b.reason,300),total_cents:calc.total});
+  const rewardCents=optIn?Math.round(calc.total*0.10):0;
+  const u=await c.query(`UPDATE wl_proposals SET items=$2::jsonb,total_cents=$3,deposit_cents=$4,balance_cents=$5,status=$6,version=version+1,updated_at=now(),invoice_no=COALESCE($7,invoice_no),
+    accepted_at=CASE WHEN $6=$8 THEN now() ELSE accepted_at END,declined_at=CASE WHEN $6=$9 THEN now() ELSE declined_at END,
+    nexora_opt_in=$10,nexora_consent_at=CASE WHEN $10 AND nexora_consent_at IS NULL THEN now() WHEN NOT $10 THEN NULL ELSE nexora_consent_at END,
+    reward_potential_cents=$11,reward_status=CASE WHEN $10 THEN 'pending_verification' ELSE 'not_issued' END
+    WHERE id=$1 RETURNING status,version,total_cents,deposit_cents,balance_cents,invoice_no,nexora_opt_in,reward_status,reward_potential_cents`,
+  [p.id,JSON.stringify(calc.items),calc.total,calc.deposit,calc.balance,status,invoice,'accepted','declined',optIn,rewardCents]);
+  await event(c,p.id,status,{reason:toText(b.reason,300),total_cents:calc.total,nexora_opt_in:optIn,reward_status:optIn?'pending_verification':'not_issued'});
   await c.query('COMMIT');
   res.json({...u.rows[0],invoice_pdf:invoice?ORIGIN+'/api/sales/proposal/'+req.params.token+'/invoice.pdf':null});
  }catch{await c.query('ROLLBACK').catch(()=>{});res.status(500).json({error:'Could not save your decision.'})}finally{c.release()}
