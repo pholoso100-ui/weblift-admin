@@ -20,3 +20,13 @@ No passwords, API keys, bank account numbers or private customer records are sto
 ## Deployment
 Render static site. Build command: `echo WebLift administration is ready`
 Publish directory: `.`
+
+## WhatsApp / social media proposal previews
+
+- **New private client links:** `https://weblift-sa.vercel.app/share?token=…`
+- Vercel rewrites `/share` to the Render Sales API `GET /share`, which reads only the matching project's **public site name and URL** from the proposals database.
+- The endpoint serves the **actual responsive client proposal HTML** with server-rendered `og:title`, `og:description`, `og:image`, `og:url` and Twitter card metadata. Social crawlers do not execute JavaScript, so do not move these tags into a browser script.
+- `og:image` requests a 1200×630 preview of the **public project website** from Thum.io. It never includes the private proposal token or quote values. For unpublished/non-public URLs, a WebLift/Nexora branded image is used instead.
+- Old `/proposal?token=…` links continue to open the proposal UI, but do not have project-specific social metadata.
+- **Verification without customer data:** `https://weblift-sa.vercel.app/share-preview-demo` returns a public PRISCA social-preview test card. The demo is for metadata testing; it is not a valid quotation.
+- WhatsApp caches link previews. Test a newly generated `/share` link and keep WhatsApp's link-preview option enabled. Screenshot service quotas/availability apply; do not promise instant captures for password-protected/unpublished websites.
