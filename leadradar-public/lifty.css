@@ -1,0 +1,44 @@
+
+.liftycenter{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(0,1.2fr);background:radial-gradient(ellipse at 20% 45%,#237250 0%,#0b3326 41%,#061e19 80%);border-radius:24px;color:#fff;min-height:475px;overflow:hidden;border:1px solid #356651;box-shadow:0 18px 50px #07211d14}
+.liftyfigure{position:relative;min-height:400px;padding:58px 20px 25px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:repeating-radial-gradient(circle at 50% 47%,transparent 0,transparent 44px,#dcbf8b1e 45px,#dcbf8b1e 46px)}
+.liftyfigbar{display:flex;position:absolute;top:22px;left:24px;right:24px;justify-content:space-between;font-size:10px;letter-spacing:.1em;color:#cce9d6;font-weight:800;gap:8px}
+.liftyfigbar b{color:#ecc788}.liftyportrait{max-width:100%;width:320px;height:310px;object-fit:contain;animation:liftyBob 4s ease-in-out infinite;filter:drop-shadow(0 12px 23px #021c16aa)}
+.liftyfigure.issearching .liftyportrait{animation:liftySearch .65s ease-in-out infinite alternate}
+.liftyfigure strong{font:800 23px "Plus Jakarta Sans",sans-serif;letter-spacing:.2em;color:#f9f2e5;margin-top:-13px}
+.liftyfigure strong span{color:#e9c487;font-size:14px}.liftyactivity{font-size:12px;color:#b7ddc3;text-align:center;margin-top:10px;line-height:1.65}
+.liftyprogress{height:3px;width:170px;background:#ffffff20;overflow:hidden;border-radius:20px;margin-top:13px}
+.liftyprogress i{display:block;height:100%;background:#e9c487;width:0}.issearching .liftyprogress i{width:40%;animation:liftySweep 1s linear infinite alternate}
+@keyframes liftyBob{50%{transform:translateY(-10px)}}@keyframes liftySearch{to{transform:translateY(-8px) rotate(-1.5deg)}}@keyframes liftySweep{to{transform:translateX(170px)}}
+.liftyop{padding:48px 34px 35px 10px;display:flex;justify-content:center;flex-direction:column}
+.liftyeyebrow{font-size:10px;color:#e1bb7c;font-weight:800;letter-spacing:.14em}
+.liftyop h1{font:800 clamp(30px,3.2vw,47px)/1.14 "Plus Jakarta Sans",sans-serif;letter-spacing:-.055em;margin:14px 0}
+.liftyop h1 em{color:#f0d29c;font-style:normal}.liftyop>p{font-size:13px;color:#bcd0c0;line-height:1.75}
+.liftygrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:14px;align-items:end}
+.liftygrid label{display:flex;flex-direction:column;gap:8px;font-size:10px;font-weight:800;color:#b5cdbc;letter-spacing:.09em}
+.liftygrid input,.liftygrid select{min-width:0;width:100%;border:1px solid #628b777d;color:white;background:#124331;border-radius:10px;padding:13px 12px;outline:none;font-size:12px}
+.liftygrid input::placeholder{color:#a5c5ae}.liftygrid input:focus,.liftygrid select:focus{border-color:#e5c58c;box-shadow:0 0 0 3px #e5c58c20}
+.liftygrid select option{background:#0e3326}.liftystart{border:0;padding:13px 10px;border-radius:10px;background:linear-gradient(125deg,#edce9a,#cc9f5b);font-weight:800;color:#163121;font-size:12px;min-height:45px}
+.liftychips,.liftyquickactions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:18px}
+.liftychips span{font-size:11px;color:#b9cdbc}.liftychips button,.liftyquickactions button{border-radius:18px;border:1px solid #87ac8e6c;color:#e9f4eb;background:#ffffff0b;padding:8px 11px;font-size:11px;font-weight:700}
+.liftyquickactions button{background:#e0efdd16;border-radius:9px}
+.liftychips button:hover,.liftyquickactions button:hover{background:#5a886657}
+.liftybox{margin-top:22px;background:white;border:1px solid #e4e9e4;border-radius:17px;overflow:hidden}
+.liftyboxhead{padding:23px 24px;border-bottom:1px solid #e4e9e4;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.liftyboxhead h2{font-size:22px;margin:7px 0}.liftyboxhead p{margin:0;color:#687868;font-size:12px;max-width:680px;line-height:1.6}
+.liftycount{padding:8px 13px;border-radius:18px;background:#e7f4e7;color:#125c43;font-size:11px;font-weight:800;white-space:nowrap}
+.liftyresults{padding:19px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.liftycard{border:1px solid #e0e9e0;border-radius:13px;padding:18px;background:#fcfffc}
+.liftycard header{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:#25754c;font-weight:800}
+.liftycard h3{font-size:14px;margin:10px 0;color:#163528}.liftycard p{color:#536b5c;font-size:12px;line-height:1.6}
+.liftylocked{border-top:1px solid #e6ece6;padding-top:11px;font-size:11px;color:#8b673d;font-weight:800}
+.liftyempty{text-align:center;grid-column:1/-1;padding:32px 12px;color:#657568;font-size:13px}
+.liftyprivacy{padding:15px 23px;background:#f7faf7;border-top:1px solid #e0e9e0;font-size:11px;color:#68796c;line-height:1.7}
+.liftypricing{display:flex;justify-content:space-between;align-items:center;gap:20px;background:linear-gradient(90deg,#fbf2e5,#f3faf0);border:1px solid #e1d2b5;border-radius:15px;margin:20px 0;padding:26px}
+.liftypricing h2{font-size:22px;margin:10px 0}.liftypricing h2 em{font-style:normal;color:#947032}.liftypricing p{font-size:12px;color:#667465;line-height:1.75}.liftypricing a{border-radius:9px;background:#0b6547;color:white;text-decoration:none;font-weight:800;font-size:12px;padding:14px 17px;white-space:nowrap}
+.liftybubble{position:fixed;right:16px;bottom:17px;z-index:310;display:flex;align-items:center;gap:7px;background:#0a3d2e;color:white;border:1px solid #e8c2849c;border-radius:15px;box-shadow:0 11px 30px #05241b40;padding:5px 12px 5px 2px;cursor:pointer}
+.liftybubble img{width:52px;height:56px;object-fit:contain}.liftybubble b{color:#f5d49e;font-size:12px}.liftybubble span{font-size:11px;display:block}.liftyheroimg{display:flex;align-items:center;flex-direction:column;justify-content:center;height:100%;gap:8px}
+.liftyheroimg img{width:min(90%,295px);height:270px;object-fit:contain;filter:drop-shadow(0 11px 23px #0005);animation:liftyBob 4s ease-in-out infinite}
+.liftyheroimg b{color:#f1d195;font-size:12px;text-align:center}
+@media(max-width:880px){.liftycenter{grid-template-columns:1fr}.liftyfigure{min-height:280px;padding-top:50px}.liftyportrait{height:210px;width:250px}.liftyop{padding:10px 27px 30px}.liftyresults{grid-template-columns:1fr}}
+@media(max-width:600px){.liftycenter{border-radius:15px}.liftygrid{grid-template-columns:1fr}.liftyboxhead{display:block}.liftycount{display:inline-block;margin-top:10px}.liftypricing{display:block}.liftypricing a{display:inline-block;margin-top:12px}.liftybubble{right:9px;bottom:12px}.liftybubble img{width:44px;height:48px}.liftyop h1{font-size:31px}}
+@media(prefers-reduced-motion:reduce){.liftyportrait,.liftyheroimg img{animation:none!important}}
