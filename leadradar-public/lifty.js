@@ -71,7 +71,7 @@ document.querySelectorAll("[data-lifty]").forEach(x=>x.addEventListener("click",
  if(act==="dashboard"){say("Opening administration. An authorised sign-in may be required.");nav("dashboard")}
  if(act==="settings"){say("Opening monitor controls. Administrator access may be required.");nav("settings")}
  if(act==="offer"){nav("offer")}
- if(act==="share"){const url="https://weblift-leadradar.onrender.com/#lifty",message="Meet Lifty, WebLift SA's worldwide search guide: "+url;
+ if(act==="share"){const url=location.origin+"/#lifty",message="Meet Lifty, WebLift SA's worldwide search guide: "+url;
    if(navigator.share)navigator.share({title:"Meet Lifty · WebLift SA",text:message,url}).catch(()=>{});
    else window.open("https://wa.me/?text="+encodeURIComponent(message),"_blank","noopener") }
 }));
